@@ -76,7 +76,6 @@ def train():
     model.eval()
     for epoch in range(num_epochs):
         total_loss = 0
-        optimizer.zero_grad()
         for batch in train_loader:
             images, labels = batch
 
@@ -100,7 +99,8 @@ def train():
 
             loss = Loss_Weighted()
             loss = loss.calc(heatmaps_pre, heatmaps_target, heatmap_masks) + loss.calc(pafs_pre, pafs_target, paf_masks)
-
+            
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             total_loss+=loss.item()
