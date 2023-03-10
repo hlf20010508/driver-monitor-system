@@ -1,5 +1,5 @@
 import torch.nn as nn
-from base_net_lib import Bneck, SEblock
+from model.base_net_lib import Bneck, SEblock
 
 class MobileNetV1_Base(nn.Module):
     def __init__(self):

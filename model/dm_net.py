@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
-import base_net
+import model.base_net as base_net
 
 class DMNet(nn.Module):
-    def __init__(self, heatmap_num, paf_num):
+    def __init__(self, base_model, heatmap_num, paf_num):
         super().__init__()
-        self.base = Base_model()
+        self.base = Base_model(base_model)
         self.stage_1 = Stage_1(heatmap_num, paf_num)
         self.stage_2 = Stage_2(heatmap_num, paf_num)
         
@@ -42,10 +42,18 @@ class Cpm(nn.Module):
         return h
 
 class Base_model(nn.Module):
-    def __init__(self):
+    def __init__(self, base_model):
         super().__init__()
-        # self.net_base = base_net.MobileNetV1_Base()
-        self.net_base = base_net.VGG19_Base()
+        if base_model == 'vgg19':
+            self.net_base = base_net.VGG19_Base()
+        elif base_model == 'mnv1':
+            self.net_base = base_net.MobileNetV1_Base()
+        elif base_model =='mnv3':
+            self.net_base = base_net.MobileNetV3_Base()
+        else:
+            print('base model available: vgg19 mnv1 mnv3')
+            exit()
+        
         self.cpm = Cpm()
         self.relu = nn.ReLU()
     def forward(self, h):

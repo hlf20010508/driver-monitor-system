@@ -7,7 +7,7 @@ from model.dm_net import DMNet
 import cv2
 
 mode = os.environ.get('mode', 'train')
-
+base_model = os.environ.get('base_model', 'vgg19')
 annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
 model_save_path = os.environ.get('model_save_path', 'model.pth')
@@ -60,6 +60,7 @@ train_loader = torch.utils.data.DataLoader(
 
 def train():
     model = DMNet(
+        base_model = base_model,
         heatmap_num=heatmap_num,
         paf_num=paf_num
     )

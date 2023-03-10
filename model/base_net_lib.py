@@ -14,7 +14,7 @@ class Bneck(nn.Module):
         :param SE: 是否使用注意力机制,默认为false
         :param skip_connection: 是否进行跳跃连接,当且仅当输入与输出维数相同且大小相同时开启
         """
-        super(Bneck, self).__init__()
+        super().__init__()
         # 1.使用1×1卷积升维
         self.conv_1_1_up = nn.Conv2d(input_size, exp_size, 1)
         if NL == 'RE':
@@ -43,8 +43,12 @@ class Bneck(nn.Module):
         if SE:
             self.se_block = SEblock(exp_size)
 
-        # 判断是否使用跳跃连接: 说明-> 当输入维数等于输出维数且大小相同时才进行跳跃连接
-        if input_size == out_size:
+        # 判断是否使用跳跃连接: 说明-> 当输入维数不等于输出维数且大小相同时才进行跳跃连接
+        self.shortcut = nn.Sequential(
+            nn.Conv2d(input_size, out_size, kernel_size=1, stride=1, padding=0, bias=False),
+            nn.BatchNorm2d(out_size),
+        )
+        if input_size != out_size and s == 1:
             self.skip = True
         else:
             self.skip = False
@@ -58,17 +62,16 @@ class Bneck(nn.Module):
         x2 = self.depth_conv(x1)
         x2 = self.nl2(x2)
 
+        # 3.1×1卷积降维
+        x3 = self.conv_1_1_down(x2)
+
         # 判断是否添加注意力机制
         if self.se:
             x2 = self.se_block(x2)
 
-        # 3.1×1卷积降维
-        x3 = self.conv_1_1_down(x2)
-
         # 判断是否使用跳跃连接
         if self.skip:
-            x3 = x3 + x
-        print("bneck:", x3.shape)
+            x3 = x3 + self.shortcut(x)
         return x3
 
 
@@ -79,7 +82,7 @@ class SEblock(nn.Module):
         :param channel: channel为输入的维度,
         :param r: r为全连接层缩放比例->控制中间层个数 默认为1/4
         """
-        super(SEblock, self).__init__()
+        super().__init__()
         # 全局均值池化
         self.global_avg_pool = nn.AdaptiveAvgPool2d(1)
         # 全连接层
