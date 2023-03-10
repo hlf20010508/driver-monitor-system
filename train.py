@@ -72,7 +72,6 @@ def train():
         lr=learning_rate,
         weight_decay=weight_decay,
     )
-    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer)
 
     model.eval()
     for epoch in range(num_epochs):
@@ -104,7 +103,6 @@ def train():
 
             loss.backward()
             optimizer.step()
-            scheduler.step(loss)
             total_loss+=loss.item()
         print('epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss))
     torch.save(model.state_dict(), model_save_path)
