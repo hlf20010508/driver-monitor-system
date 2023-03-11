@@ -104,7 +104,7 @@ def train():
             loss.backward()
             optimizer.step()
             total_loss+=loss.item()
-            break
+            
         print('epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss))
     torch.save(model.state_dict(), os.path.join(model_save_dir, '%s-ep%d-loss%.2f.pth'%(base_model, num_epochs, total_loss)))
 
