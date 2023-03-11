@@ -99,7 +99,7 @@ def train():
 
             loss = Loss_Weighted()
             loss = loss.calc(heatmaps_pre, heatmaps_target, heatmap_masks) + loss.calc(pafs_pre, pafs_target, paf_masks)
-            
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -109,6 +109,7 @@ def train():
 
 def test():
     model = DMNet(
+        base_model=base_model,
         heatmap_num=heatmap_num,
         paf_num=paf_num
     )
