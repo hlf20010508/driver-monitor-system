@@ -10,7 +10,7 @@ mode = os.environ.get('mode', 'train')
 base_model = os.environ.get('base_model', 'vgg19')
 annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
-model_save_path = os.environ.get('model_save_path', 'model.pth')
+model_save_dir = os.environ.get('model_save_dir', './')
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -105,7 +105,7 @@ def train():
             optimizer.step()
             total_loss+=loss.item()
         print('epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss))
-    torch.save(model.state_dict(), model_save_path)
+    torch.save(model.state_dict(), os.path.join(model_save_dir, '%s-ep%d-loss%.2f.pth'%(base_model, num_epochs, total_loss)))
 
 def test():
     model = DMNet(
