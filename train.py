@@ -16,8 +16,8 @@ num_epochs = int(os.environ.get('num_epochs', 300))
 batch_size = int(os.environ.get('batch_size', 25))
 learning_rate = float(os.environ.get('learning_rate', 4e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
-heatmap_num = int(os.environ.get('heatmap_num', 6))
-paf_num = int(os.environ.get('paf_num', 8))
+heatmap_num = int(os.environ.get('heatmap_num', 8))
+paf_num = int(os.environ.get('paf_num', 14))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -28,12 +28,14 @@ heatmap_dict = {
     'right-shoulder': 3,
     'right-elbow': 4,
     'right-wrist': 5,
+    'head': 6,
+    'wheel': 7
 }
 
 # 下标为起点，值为终点，-1表示不连通
-limb_dict = [1, 2, -1, 4, 5, -1]
-# 起点对应在body_paf中的下标
-paf_dict = [0, 1, -1, 2, 3, -1]
+limb_dict = [6, 0, 1, 6, 3, 4, 7, -1]
+# 起点对应在pafs中的下标
+paf_dict = [0, 1, 2, 3, 4, 5, 6, -1]
 
 dataset = Train_Dataset(
     heatmap_num=heatmap_num,
@@ -71,7 +73,7 @@ optimizer = torch.optim.Adam(
 
 model.eval()
 
-log = open(os.path.join(model_save_dir, 'log', '%s-ep%d-loss%.2f.log'%(base_model, num_epochs, total_loss)), 'w')
+log_recorder = ''
 for epoch in range(num_epochs):
     total_loss = 0
     for batch in train_loader:
@@ -104,6 +106,9 @@ for epoch in range(num_epochs):
         total_loss+=loss.item()
     output = 'epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss)
     print(output)
-    log.write(output + '\n')
-torch.save(model.state_dict(), os.path.join(model_save_dir, '%s-ep%d-loss%.2f.pth'%(base_model, num_epochs, total_loss)))
-log.close()
+    log_recorder += output + '\n'
+
+output_pre = '%s-ep%d-loss%.2f'%(base_model, num_epochs, total_loss)
+torch.save(model.state_dict(), os.path.join(model_save_dir, output_pre + '.pth'))
+with open(os.path.join(model_save_dir, output_pre + '.log'), 'w') as log:
+    log.write(log_recorder)
