@@ -13,8 +13,8 @@ model_load_path = os.environ.get('model_load_path', 'model.pth')
 width = int(os.environ.get('width', 224))
 height = int(os.environ.get('height', 224))
 batch_size = int(os.environ.get('batch_size', 25))
-heatmap_num = int(os.environ.get('heatmap_num', 6))
-paf_num = int(os.environ.get('paf_num', 8))
+heatmap_num = int(os.environ.get('heatmap_num', 8))
+paf_num = int(os.environ.get('paf_num', 14))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

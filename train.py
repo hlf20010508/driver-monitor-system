@@ -38,7 +38,7 @@ limb_dict = [6, 0, 1, 6, 3, 4, 7, -1]
 paf_dict = [0, 1, 2, 3, 4, 5, 6, -1]
 
 heatmap_num = len(heatmap_dict.keys())
-paf_num = max(paf_dict) + 1
+paf_num = (max(paf_dict) + 1) * 2
 
 dataset = Train_Dataset(
     heatmap_num=heatmap_num,
