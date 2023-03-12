@@ -18,7 +18,7 @@ sigma = 4
 # paf半宽度参数
 threshold = 8
 
-class Dataset(Dst):
+class Train_Dataset(Dst):
     def __init__(
             self,
             heatmap_num,
@@ -52,7 +52,7 @@ class Dataset(Dst):
     
     # 导入图片
     def get_image_matrix(self, path):
-        image = Image.open(path).convert('RGB')
+        image = Image.open(path)
         return image
 
     # 输出处理过的图片数据和图片标签

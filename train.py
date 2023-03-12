@@ -1,19 +1,14 @@
 import os
 import torch
 import torchvision.transforms as transforms
-from module.load_data import Dataset
+from module.load_data import Train_Dataset
 from module.loss import Loss_Weighted
 from model.dm_net import DMNet
-import cv2
 
-mode = os.environ.get('mode', 'train')
-base_model = os.environ.get('base_model', 'vgg19')
+base_model = os.environ.get('base_model', 'mnv3s')
 annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
-model_load_path = os.environ.get('model_load_path', 'model.pth')
-
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 width = int(os.environ.get('width', 224))
 height = int(os.environ.get('height', 224))
@@ -23,6 +18,8 @@ learning_rate = float(os.environ.get('learning_rate', 4e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
 heatmap_num = int(os.environ.get('heatmap_num', 6))
 paf_num = int(os.environ.get('paf_num', 8))
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 heatmap_dict = {
     'left-shoulder': 0,
@@ -38,7 +35,7 @@ limb_dict = [1, 2, -1, 4, 5, -1]
 # 起点对应在body_paf中的下标
 paf_dict = [0, 1, -1, 2, 3, -1]
 
-dataset = Dataset(
+dataset = Train_Dataset(
     heatmap_num=heatmap_num,
     paf_num=paf_num,
     heatmap_dict=heatmap_dict,
@@ -58,91 +55,55 @@ train_loader = torch.utils.data.DataLoader(
     pin_memory=True
 )
 
-def train():
-    model = DMNet(
-        base_model = base_model,
-        heatmap_num=heatmap_num,
-        paf_num=paf_num
-    )
-    model = model.to(device)
+model = DMNet(
+    base_model = base_model,
+    heatmap_num=heatmap_num,
+    paf_num=paf_num
+)
+model = model.to(device)
 
-    # 定义损失和优化器
-    optimizer = torch.optim.Adam(
-        model.parameters(),
-        lr=learning_rate,
-        weight_decay=weight_decay,
-    )
+# 定义损失和优化器
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=learning_rate,
+    weight_decay=weight_decay,
+)
 
-    model.eval()
-    for epoch in range(num_epochs):
-        total_loss = 0
-        for batch in train_loader:
-            images, labels = batch
+model.eval()
 
-            heatmaps_target = labels['heatmaps_target']
-            heatmap_masks = labels['heatmap_masks']
-            pafs_target = labels['pafs_target']
-            paf_masks = labels['paf_masks']
-
-            images = images.to(device)
-            heatmaps_target = heatmaps_target.to(device)
-            heatmap_masks = heatmap_masks.to(device)
-            pafs_target = pafs_target.to(device)
-            paf_masks = paf_masks.to(device)
-
-            heatmaps_pre, pafs_pre = model(images)
-
-            T = transforms.Resize((width, height))
-
-            heatmaps_pre = T(heatmaps_pre)
-            pafs_pre = T(pafs_pre)
-
-            loss = Loss_Weighted()
-            loss = loss.calc(heatmaps_pre, heatmaps_target, heatmap_masks) + loss.calc(pafs_pre, pafs_target, paf_masks)
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            total_loss+=loss.item()
-            
-        print('epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss))
-    torch.save(model.state_dict(), os.path.join(model_save_dir, '%s-ep%d-loss%.2f.pth'%(base_model, num_epochs, total_loss)))
-
-def test():
-    model = DMNet(
-        base_model=base_model,
-        heatmap_num=heatmap_num,
-        paf_num=paf_num
-    )
-    model_dict = torch.load(model_load_path, map_location=device)
-    model.load_state_dict(model_dict)
-    model = model.to(device)
-    model.eval()
-
+log = open(os.path.join(model_save_dir, 'log', '%s-ep%d-loss%.2f.log'%(base_model, num_epochs, total_loss)), 'w')
+for epoch in range(num_epochs):
+    total_loss = 0
     for batch in train_loader:
         images, labels = batch
+
+        heatmaps_target = labels['heatmaps_target']
+        heatmap_masks = labels['heatmap_masks']
+        pafs_target = labels['pafs_target']
+        paf_masks = labels['paf_masks']
+
         images = images.to(device)
+        heatmaps_target = heatmaps_target.to(device)
+        heatmap_masks = heatmap_masks.to(device)
+        pafs_target = pafs_target.to(device)
+        paf_masks = paf_masks.to(device)
 
-        heatmaps, pafs = model(images)
+        heatmaps_pre, pafs_pre = model(images)
 
-        for m in heatmaps:
-            for image in m:
-                image = image.to('cpu')
-                image = image.detach().numpy()
-                cv2.imshow('monitor', image)
-                cv2.waitKey()
+        T = transforms.Resize((width, height))
 
-        for m in pafs:
-            for image in m:
-                image = image.to('cpu')
-                image = image.detach().numpy()
-                cv2.imshow('monitor', image)
-                cv2.waitKey()
+        heatmaps_pre = T(heatmaps_pre)
+        pafs_pre = T(pafs_pre)
 
-if __name__ == '__main__':
-    if mode == 'train':
-        train()
-    elif mode == 'test':
-        test()
-    else:
-        print('mode should be train or test')
+        loss = Loss_Weighted()
+        loss = loss.calc(heatmaps_pre, heatmaps_target, heatmap_masks) + loss.calc(pafs_pre, pafs_target, paf_masks)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        total_loss+=loss.item()
+    output = 'epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss)
+    print(output)
+    log.write(output + '\n')
+torch.save(model.state_dict(), os.path.join(model_save_dir, '%s-ep%d-loss%.2f.pth'%(base_model, num_epochs, total_loss)))
+log.close()
