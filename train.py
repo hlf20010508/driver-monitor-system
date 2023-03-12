@@ -16,8 +16,8 @@ num_epochs = int(os.environ.get('num_epochs', 300))
 batch_size = int(os.environ.get('batch_size', 25))
 learning_rate = float(os.environ.get('learning_rate', 4e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
-heatmap_num = int(os.environ.get('heatmap_num', 8))
-paf_num = int(os.environ.get('paf_num', 14))
+# heatmap_num = int(os.environ.get('heatmap_num', 8))
+# paf_num = int(os.environ.get('paf_num', 14))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -36,6 +36,9 @@ heatmap_dict = {
 limb_dict = [6, 0, 1, 6, 3, 4, 7, -1]
 # 起点对应在pafs中的下标
 paf_dict = [0, 1, 2, 3, 4, 5, 6, -1]
+
+heatmap_num = len(heatmap_dict.keys())
+paf_num = max(paf_dict) + 1
 
 dataset = Train_Dataset(
     heatmap_num=heatmap_num,
