@@ -12,7 +12,6 @@ model_load_path = os.environ.get('model_load_path', 'model.pth')
 
 width = int(os.environ.get('width', 224))
 height = int(os.environ.get('height', 224))
-batch_size = int(os.environ.get('batch_size', 25))
 heatmap_num = int(os.environ.get('heatmap_num', 8))
 paf_num = int(os.environ.get('paf_num', 14))
 
@@ -24,10 +23,12 @@ colors = [
     [0, 0, 255], [85, 0, 255], [170, 0, 255], [255, 0, 255], [255, 0, 170], [255, 0, 85]
 ]
 
+INFINITE = 10000
+
 img_path_list = [ os.path.join(img_root_path, i) for i in os.listdir(img_root_path) if not i.startswith('.')]
 
 transforms = tf.Compose([
-    tf.Resize((width, height)),
+    tf.Resize((height, width)),
     tf.ToTensor(),
     tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
 ])
@@ -54,16 +55,20 @@ def load_img(img_path):
 
 def point_list_gen(heatmaps, ori_width, ori_height):
     point_list = [[] for i in range(heatmap_num)]
-    scale_x = ori_width / 14
-    scale_y = ori_height / 14
+    scale_x = ori_width / heatmaps.shape[2]
+    scale_y = ori_height / heatmaps.shape[1]
     for heatmap_index in range(heatmap_num):
         heatmap = heatmaps[heatmap_index]
         max_point = np.max(heatmap)
         if max_point > 0.2:
             point = np.where(heatmap == max_point)
-            point = (int(point[1][0] * scale_x), int(point[0][0] * scale_y))
+            point = (int(point[1][0] * scale_x) + 14 , int(point[0][0] * scale_y) + 14 )
             point_list[heatmap_index].append(point)
     return point_list
+
+# 计算两点间距离
+def calc_distance(point_list):
+    return ((point_list[0][0] - point_list[1][0])**2 + (point_list[0][1] - point_list[1][1])**2)**0.5
 
 for img_path in img_path_list:
     ori_img , image , ori_width, ori_height= load_img(img_path)
@@ -81,5 +86,44 @@ for img_path in img_path_list:
         for points in point_list:
             for point in points:
                 cv2.circle(ori_img, point, 4, colors[0], -1)
+
+    left_shoulder = point_list[0]
+    left_elbow = point_list[1]
+    left_wrist = point_list[2]
+    right_shoulder = point_list[3]
+    right_elbow = point_list[4]
+    right_wrist = point_list[5]
+    head = point_list[6]
+    wheel = point_list[7]
+
+    if len(left_shoulder) > 0 and len(head) > 0:
+        cv2.line(ori_img, left_shoulder[0], head[0], colors[1])
+    if len(left_shoulder) > 0 and len(left_elbow) > 0:
+        cv2.line(ori_img, left_shoulder[0], left_elbow[0], colors[1])
+    if len(left_elbow) > 0 and len(left_wrist) > 0:
+        cv2.line(ori_img, left_elbow[0], left_wrist[0], colors[1])
+    if len(right_shoulder) > 0 and len(head) > 0:
+        cv2.line(ori_img, right_shoulder[0], head[0], colors[2])
+    if len(right_shoulder) > 0 and len(right_elbow) > 0:
+        cv2.line(ori_img, right_shoulder[0], right_elbow[0], colors[2])
+    if len(right_elbow) > 0 and len(right_wrist) > 0:
+        cv2.line(ori_img, right_elbow[0], right_wrist[0], colors[2])
+    if len(wheel) > 0 and len(left_wrist) > 0:
+        cv2.line(ori_img, wheel[0], left_wrist[0], colors[3])
+    if len(wheel) > 0 and len(right_wrist) > 0:
+        cv2.line(ori_img, wheel[0], right_wrist[0], colors[3])
+
+    if len(wheel) > 0:
+        left_dis = INFINITE
+        right_dis = INFINITE
+        if len(left_wrist) > 0:
+            left_dis = calc_distance([left_wrist[0], wheel[0]])
+        if len(right_wrist) > 0:
+            right_dis = calc_distance([right_wrist[0], wheel[0]])
+        if left_dis < 100 and right_dis < 100:
+            cv2.putText(ori_img, 'safe', (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, colors[4])
+        else:
+            cv2.putText(ori_img, 'dangerous', (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, colors[5])
+
     cv2.imshow('monitor', ori_img)
     cv2.waitKey()
