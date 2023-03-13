@@ -74,8 +74,8 @@ class Train_Dataset(Dst):
                 index = self.heatmap_dict[result['value']['keypointlabels'][0]]
                 x = result['value']['x']
                 y = result['value']['y']
-                x = int(x / 100 * img_width)
-                y = int(y / 100 * img_height)
+                x = x / 100 * img_width
+                y = y / 100 * img_height
                 heatmap_points[index].append((x, y))
             for start in range(self.heatmap_num):
                 if len(heatmap_points[start]) > 0:
