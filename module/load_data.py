@@ -5,13 +5,15 @@ from PIL import Image
 import json
 import numpy as np
 from scipy import ndimage
+import cv2
 
 # 热点范围参数
 th = 4.6052
 delta = th * 2 ** 0.5
-sigma = 4
+# 可影响半径
+sigma = 1.5
 # paf半宽度参数
-threshold = 8
+threshold = 2
 stride = 8
 
 class Train_Dataset(Dst):
@@ -68,13 +70,13 @@ class Train_Dataset(Dst):
                 index = self.heatmap_dict[result['value']['keypointlabels'][0]]
                 x = result['value']['x']
                 y = result['value']['y']
-                x = x / 100 * img_width
-                y = y / 100 * img_height
+                x = x / 100 * img_width / stride
+                y = y / 100 * img_height / stride
                 heatmap_points[index].append((x, y))
             for start in range(self.heatmap_num):
                 if len(heatmap_points[start]) > 0:
                     end = self.limb_dict[start]
-                    if end > 0:
+                    if end >= 0:
                         if len(heatmap_points[end]) > 0:
                             x1, y1 = heatmap_points[start][0]
                             x2, y2 = heatmap_points[end][0]
@@ -182,6 +184,10 @@ class Train_Dataset(Dst):
                         continue
                     paf_x[y][x] = norm_x
                     paf_y[y][x] = norm_y
+        cv2.imshow('monitor', paf_x)
+        cv2.waitKey()
+        cv2.imshow('monitor', paf_y)
+        cv2.waitKey()
         return paf_x, paf_y
 
 
