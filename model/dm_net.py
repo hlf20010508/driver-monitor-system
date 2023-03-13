@@ -64,7 +64,7 @@ class Base_model(nn.Module):
         # elif base_model =='mnv3s':
         # 28*28
         self.net_base = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT).features[:9]
-        self.net_base[4].block[1][0] = nn.Conv2d(96, 96, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=96, bias=False)
+        # self.net_base[4].block[1][0] = nn.Conv2d(96, 96, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=96, bias=False)
         self.cpm = Cpm(48)
         # elif base_model =='mnv3l':
         #     self.net_base = models.mobilenet_v3_large(weights=models.MobileNet_V3_Large_Weights.DEFAULT).features[:13]
