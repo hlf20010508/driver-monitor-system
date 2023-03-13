@@ -95,10 +95,10 @@ for epoch in range(num_epochs):
 
         heatmaps_pre, pafs_pre = model(images)
 
-        T = transforms.Resize((height, width))
+        # T = transforms.Resize((height, width))
 
-        heatmaps_pre = T(heatmaps_pre)
-        pafs_pre = T(pafs_pre)
+        # heatmaps_pre = T(heatmaps_pre)
+        # pafs_pre = T(pafs_pre)
 
         loss = Loss_Weighted()
         loss = loss.calc(heatmaps_pre, heatmaps_target, heatmap_masks) + loss.calc(pafs_pre, pafs_target, paf_masks)
