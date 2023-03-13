@@ -24,8 +24,6 @@ class Train_Dataset(Dst):
             paf_dict,
             annotation_path,
             img_root_path,
-            width,
-            height
         ):
         self.heatmap_num = heatmap_num
         self.paf_num = paf_num
@@ -34,14 +32,11 @@ class Train_Dataset(Dst):
         self.paf_dict = paf_dict
         self.annotation_path = annotation_path
         self.img_root_path = img_root_path
-        self.width = width
-        self.height = height
         # 获取图片路径列表和标签列表
         self.img_path_list, self.label_list = self.get_item_list()
 
         # 处理图片
         self.transforms = tf.Compose([
-            tf.Resize((width, height)),
             tf.ToTensor(),
             tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ])
@@ -66,8 +61,6 @@ class Train_Dataset(Dst):
             name = item['file_upload']
             img_width = item['annotations'][0]['result'][0]['original_width']
             img_height = item['annotations'][0]['result'][0]['original_height']
-            scale_x = self.width / stride / img_width
-            scale_y = self.height / stride / img_height
             img_path_list.append(os.path.join(self.img_root_path, name))
             heatmap_points = [[] for i in range(self.heatmap_num)]
             pafs = [[] for i in range(self.paf_num // 2)]
@@ -86,8 +79,8 @@ class Train_Dataset(Dst):
                             x1, y1 = heatmap_points[start][0]
                             x2, y2 = heatmap_points[end][0]
                             pafs[self.paf_dict[start]].append((x1, y1, x2, y2))
-            heatmaps_target, heatmap_masks = self.get_heatmaps_and_masks(heatmap_points, scale_x, scale_y)
-            pafs_target, paf_masks = self.get_pafs_and_masks(pafs, scale_x, scale_y)
+            heatmaps_target, heatmap_masks = self.get_heatmaps_and_masks(heatmap_points, img_width, img_height)
+            pafs_target, paf_masks = self.get_pafs_and_masks(pafs, img_width, img_height)
             label_list.append({
                 'heatmaps_target': heatmaps_target,
                 'heatmap_masks': heatmap_masks,
@@ -96,50 +89,44 @@ class Train_Dataset(Dst):
             })
         return img_path_list, label_list
 
-    def get_heatmaps_and_masks(self, points_list, scale_x, scale_y):
+    def get_heatmaps_and_masks(self, points_list, img_width, img_height):
         heatmap_list = []
-        mask_list = []
         for points in points_list:
-            heatmap= self.heatmap_gen(points, scale_x, scale_y)
+            heatmap= self.heatmap_gen(points, img_width, img_height)
             heatmap_list.append(heatmap)
-        mask = self.mask_gen(heatmap_list)
-        mask_list.append(mask)
-        return np.array(heatmap_list), np.array(mask_list)
+        mask = self.mask_gen(heatmap_list, img_width, img_height)
+        return np.array(heatmap_list), np.array([mask])
 
-    def get_pafs_and_masks(self, limbs_list, scale_x, scale_y):
+    def get_pafs_and_masks(self, limbs_list, img_width, img_height):
         paf_list = []
-        mask_list = []
         for limbs in limbs_list:
-            paf_x, paf_y = self.paf_gen(limbs, scale_x, scale_y)
+            paf_x, paf_y = self.paf_gen(limbs, img_width, img_height)
             paf_list.append(paf_x)
             paf_list.append(paf_y)
-        mask = self.mask_gen(paf_list)
-        mask_list.append(mask)
-        return np.array(paf_list), np.array(mask_list)
+        mask = self.mask_gen(paf_list, img_width, img_height)
+        return np.array(paf_list), np.array([mask])
 
-    def mask_gen(self, map_list):
+    def mask_gen(self, map_list, img_width, img_height):
         k_size = 3
-        mask = np.zeros([self.height // stride, self.width // stride], dtype=float)
+        mask = np.zeros([img_height // stride, img_width // stride], dtype=float)
         for map in map_list:
             dilate = ndimage.grey_dilation(map ,size=(k_size, k_size))
             mask[np.where(dilate > 0.2)] = 1
         return mask
 
     # 生成关节点热力图
-    def heatmap_gen(self, points, scale_x, scale_y):
+    def heatmap_gen(self, points, img_width, img_height):
         # 生成全零矩阵对热力图进行初始化
-        heatmap = np.zeros([self.height // stride, self.width // stride], dtype=float)
+        heatmap = np.zeros([img_height // stride, img_width // stride], dtype=float)
         for point in points:
             # 中心点
             center_x, center_y = point
-            center_x = center_x * scale_x
-            center_y = center_y * scale_y
             # 确定左边界和上边界
             x0 = int(max(0, center_x - delta * sigma))
             y0 = int(max(0, center_y - delta * sigma))
             # 确定右边界和下边界
-            x1 = int(min(self.width // stride, center_x + delta * sigma))
-            y1 = int(min(self.height // stride, center_y + delta * sigma))
+            x1 = int(min(img_width // stride, center_x + delta * sigma))
+            y1 = int(min(img_height // stride, center_y + delta * sigma))
 
             exp_factor = 1 / 2.0 / sigma / sigma
             # 根据确定的边界提取该热点部分
@@ -155,16 +142,16 @@ class Train_Dataset(Dst):
             heatmap[y0:y1, x0:x1] = np.maximum(arr_heatmap, arr_exp)
         return heatmap
 
-    def paf_gen(self, limbs, scale_x, scale_y):
-        paf_x = np.zeros([self.height // stride, self.width // stride], dtype=float)
-        paf_y = np.zeros([self.height // stride, self.width // stride], dtype=float)
+    def paf_gen(self, limbs, img_width, img_height):
+        paf_x = np.zeros([img_height // stride, img_width // stride], dtype=float)
+        paf_y = np.zeros([img_height // stride, img_width // stride], dtype=float)
         for limb in limbs:
             # 起点坐标
-            x_from = limb[0] * scale_x
-            y_from = limb[1] * scale_y
+            x_from = limb[0]
+            y_from = limb[1]
             # 终点坐标
-            x_to = limb[2] * scale_x
-            y_to = limb[3] * scale_y
+            x_to = limb[2]
+            y_to = limb[3]
             # 对应的水平向量
             vector_x = x_to - x_from
             # 对应的垂直向量
@@ -177,8 +164,8 @@ class Train_Dataset(Dst):
             # 将向量首位向外拓展，用于组成六变形
             min_x = max(0, int(min(x_from, x_to) - threshold))
             min_y = max(0, int(min(y_from, y_to) - threshold))
-            max_x = min(self.width // stride, int(max(x_from, x_to) + threshold))
-            max_y = min(self.height // stride, int(max(y_from, y_to) + threshold))
+            max_x = min(img_width // stride, int(max(x_from, x_to) + threshold))
+            max_y = min(img_height // stride, int(max(y_from, y_to) + threshold))
             # 计算单位向量
             norm_x = vector_x / module
             norm_y = vector_y / module

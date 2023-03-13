@@ -10,8 +10,6 @@ base_model = os.environ.get('base_model', 'mnv3s')
 img_root_path = os.environ['img_root_path']
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 
-width = int(os.environ.get('width', 224))
-height = int(os.environ.get('height', 224))
 heatmap_num = int(os.environ.get('heatmap_num', 8))
 paf_num = int(os.environ.get('paf_num', 14))
 
@@ -28,7 +26,6 @@ INFINITE = 10000
 img_path_list = [ os.path.join(img_root_path, i) for i in os.listdir(img_root_path) if not i.startswith('.')]
 
 transforms = tf.Compose([
-    tf.Resize((height, width)),
     tf.ToTensor(),
     tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
 ])
@@ -62,7 +59,7 @@ def point_list_gen(heatmaps, ori_width, ori_height):
         max_point = np.max(heatmap)
         if max_point > 0.2:
             point = np.where(heatmap == max_point)
-            point = (int(point[1][0] * scale_x) + 14 , int(point[0][0] * scale_y) + 14 )
+            point = (int(point[1][0] * scale_x), int(point[0][0] * scale_y))
             point_list[heatmap_index].append(point)
     return point_list
 

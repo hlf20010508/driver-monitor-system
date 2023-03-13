@@ -1,6 +1,5 @@
 import os
 import torch
-import torchvision.transforms as transforms
 from module.load_data import Train_Dataset
 from module.loss import Loss_Weighted
 from model.dm_net import DMNet
@@ -10,14 +9,10 @@ annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
 
-width = int(os.environ.get('width', 224))
-height = int(os.environ.get('height', 224))
 num_epochs = int(os.environ.get('num_epochs', 300))
 batch_size = int(os.environ.get('batch_size', 24))
 learning_rate = float(os.environ.get('learning_rate', 5e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
-# heatmap_num = int(os.environ.get('heatmap_num', 8))
-# paf_num = int(os.environ.get('paf_num', 14))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
@@ -48,8 +43,6 @@ dataset = Train_Dataset(
     paf_dict=paf_dict,
     annotation_path=annotation_path,
     img_root_path=img_root_path,
-    width=width,
-    height=height
 )
 
 train_loader = torch.utils.data.DataLoader(
@@ -94,11 +87,6 @@ for epoch in range(num_epochs):
         paf_masks = paf_masks.to(device)
 
         heatmaps_pre, pafs_pre = model(images)
-
-        # T = transforms.Resize((height, width))
-
-        # heatmaps_pre = T(heatmaps_pre)
-        # pafs_pre = T(pafs_pre)
 
         loss = Loss_Weighted()
         loss = loss.calc(heatmaps_pre, heatmaps_target, heatmap_masks) + loss.calc(pafs_pre, pafs_target, paf_masks)

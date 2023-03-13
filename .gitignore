@@ -1,4 +1,6 @@
 .DS_Store
+*.pth
+*.pt
 train.sh
 test.sh
 
