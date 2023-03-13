@@ -5,7 +5,6 @@ from PIL import Image
 import json
 import numpy as np
 from scipy import ndimage
-import cv2
 
 # 热点范围参数
 th = 4.6052
@@ -184,10 +183,6 @@ class Train_Dataset(Dst):
                         continue
                     paf_x[y][x] = norm_x
                     paf_y[y][x] = norm_y
-        cv2.imshow('monitor', paf_x)
-        cv2.waitKey()
-        cv2.imshow('monitor', paf_y)
-        cv2.waitKey()
         return paf_x, paf_y
 
 
