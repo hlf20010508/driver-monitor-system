@@ -45,7 +45,7 @@ class Cpm(nn.Module):
 class Base_model(nn.Module):
     def __init__(self, base_model):
         super().__init__()
-        # 14*14
+        # shape: (height/16) X (width/16)
         # if base_model == 'vgg19':
         #     self.net_base = models.vgg19_bn(weights=models.VGG19_BN_Weights.DEFAULT).features[:-1]
         #     self.cpm = Cpm(512)
@@ -62,7 +62,6 @@ class Base_model(nn.Module):
         #     )
         #     self.cpm = Cpm(256)
         # elif base_model =='mnv3s':
-        # 28*28
         self.net_base = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT).features[:9]
         # self.net_base[4].block[1][0] = nn.Conv2d(96, 96, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=96, bias=False)
         self.cpm = Cpm(48)

@@ -13,7 +13,7 @@ delta = th * 2 ** 0.5
 sigma = 1.5
 # paf半宽度参数
 threshold = 2
-stride = 8
+stride = 16
 
 class Train_Dataset(Dst):
     def __init__(
