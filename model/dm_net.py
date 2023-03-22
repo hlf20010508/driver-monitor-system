@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision import models
-# import model.pruned_base_net as base_net
+# import model.base_net as base_net
 
 class DMNet(nn.Module):
     def __init__(self, base_model, heatmap_num, paf_num):

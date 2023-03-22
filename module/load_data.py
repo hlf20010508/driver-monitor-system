@@ -15,6 +15,7 @@ sigma = 1.5
 threshold = 2
 stride = 16
 
+# input size 640x480
 class Train_Dataset(Dst):
     def __init__(
             self,
@@ -22,7 +23,6 @@ class Train_Dataset(Dst):
             paf_num,
             heatmap_dict,
             limb_dict,
-            paf_dict,
             annotation_path,
             img_root_path,
         ):
@@ -30,7 +30,6 @@ class Train_Dataset(Dst):
         self.paf_num = paf_num
         self.heatmap_dict = heatmap_dict
         self.limb_dict = limb_dict
-        self.paf_dict = paf_dict
         self.annotation_path = annotation_path
         self.img_root_path = img_root_path
         # 获取图片路径列表和标签列表
@@ -63,23 +62,26 @@ class Train_Dataset(Dst):
             img_width = item['annotations'][0]['result'][0]['original_width']
             img_height = item['annotations'][0]['result'][0]['original_height']
             img_path_list.append(os.path.join(self.img_root_path, name))
-            heatmap_points = [[] for i in range(self.heatmap_num)]
-            pafs = [[] for i in range(self.paf_num // 2)]
+            heatmap_points = [() for i in range(self.heatmap_num)]
+            pafs = [() for i in range(self.paf_num // 2)]
             for result in item['annotations'][0]['result']:
-                index = self.heatmap_dict[result['value']['keypointlabels'][0]]
+                try:
+                    index = self.heatmap_dict[result['value']['keypointlabels'][0]]
+                except:
+                    continue
                 x = result['value']['x']
                 y = result['value']['y']
                 x = x / 100 * img_width / stride
                 y = y / 100 * img_height / stride
-                heatmap_points[index].append((x, y))
-            for start in range(self.heatmap_num):
-                if len(heatmap_points[start]) > 0:
-                    end = self.limb_dict[start]
-                    if end >= 0:
-                        if len(heatmap_points[end]) > 0:
-                            x1, y1 = heatmap_points[start][0]
-                            x2, y2 = heatmap_points[end][0]
-                            pafs[self.paf_dict[start]].append((x1, y1, x2, y2))
+                heatmap_points[index] = (x, y)
+            for limb_index in range(len(self.limb_dict)):
+                start = heatmap_points[self.limb_dict[limb_index][0]]
+                end = heatmap_points[self.limb_dict[limb_index][1]]
+                if start and end:
+                    x1, y1 = start
+                    x2, y2 = end
+                    pafs[limb_index] = (x1, y1, x2, y2)
+
             heatmaps_target, heatmap_masks = self.get_heatmaps_and_masks(heatmap_points, img_width, img_height)
             pafs_target, paf_masks = self.get_pafs_and_masks(pafs, img_width, img_height)
             label_list.append({
@@ -90,18 +92,18 @@ class Train_Dataset(Dst):
             })
         return img_path_list, label_list
 
-    def get_heatmaps_and_masks(self, points_list, img_width, img_height):
+    def get_heatmaps_and_masks(self, point_list, img_width, img_height):
         heatmap_list = []
-        for points in points_list:
-            heatmap= self.heatmap_gen(points, img_width, img_height)
+        for point in point_list:
+            heatmap= self.heatmap_gen(point, img_width, img_height)
             heatmap_list.append(heatmap)
         mask = self.mask_gen(heatmap_list, img_width, img_height)
         return np.array(heatmap_list), np.array([mask])
 
-    def get_pafs_and_masks(self, limbs_list, img_width, img_height):
+    def get_pafs_and_masks(self, limb_list, img_width, img_height):
         paf_list = []
-        for limbs in limbs_list:
-            paf_x, paf_y = self.paf_gen(limbs, img_width, img_height)
+        for limb in limb_list:
+            paf_x, paf_y = self.paf_gen(limb, img_width, img_height)
             paf_list.append(paf_x)
             paf_list.append(paf_y)
         mask = self.mask_gen(paf_list, img_width, img_height)
@@ -116,10 +118,10 @@ class Train_Dataset(Dst):
         return mask
 
     # 生成关节点热力图
-    def heatmap_gen(self, points, img_width, img_height):
+    def heatmap_gen(self, point, img_width, img_height):
         # 生成全零矩阵对热力图进行初始化
         heatmap = np.zeros([img_height // stride, img_width // stride], dtype=float)
-        for point in points:
+        if point:
             # 中心点
             center_x, center_y = point
             # 确定左边界和上边界
@@ -143,46 +145,40 @@ class Train_Dataset(Dst):
             heatmap[y0:y1, x0:x1] = np.maximum(arr_heatmap, arr_exp)
         return heatmap
 
-    def paf_gen(self, limbs, img_width, img_height):
+    def paf_gen(self, limb, img_width, img_height):
         paf_x = np.zeros([img_height // stride, img_width // stride], dtype=float)
         paf_y = np.zeros([img_height // stride, img_width // stride], dtype=float)
-        for limb in limbs:
+        if limb:
             # 起点坐标
-            x_from = limb[0]
-            y_from = limb[1]
-            # 终点坐标
-            x_to = limb[2]
-            y_to = limb[3]
+            x_from, y_from, x_to, y_to = limb
             # 对应的水平向量
             vector_x = x_to - x_from
             # 对应的垂直向量
             vector_y = y_to - y_from
             # 计算模长
             module = (vector_x**2 + vector_y**2) ** 0.5
-            if module == 0:
-                continue
-            
-            # 将向量首位向外拓展，用于组成六变形
-            min_x = max(0, int(min(x_from, x_to) - threshold))
-            min_y = max(0, int(min(y_from, y_to) - threshold))
-            max_x = min(img_width // stride, int(max(x_from, x_to) + threshold))
-            max_y = min(img_height // stride, int(max(y_from, y_to) + threshold))
-            # 计算单位向量
-            norm_x = vector_x / module
-            norm_y = vector_y / module
-            # 以下算法为：利用两向量的叉乘为平行四边形的面积的定律来画出六变形
-            for y in range(min_y, max_y):
-                for x in range(min_x, max_x):
-                    # 得到由遍历的点到起点所组成的向量bec
-                    bec_x = x - x_from
-                    bec_y = y - y_from
-                    # 计算bec向量与单位向量的叉乘，得到的是两个向量组成的平行四边形的面积
-                    size = abs(bec_x * norm_y - bec_y * norm_x)
-                    # 如果计算得到的面积比阈值大，则不赋值
-                    if size > threshold:
-                        continue
-                    paf_x[y][x] = norm_x
-                    paf_y[y][x] = norm_y
+            if module != 0:
+                # 将向量首位向外拓展，用于组成六变形
+                min_x = max(0, int(min(x_from, x_to) - threshold))
+                min_y = max(0, int(min(y_from, y_to) - threshold))
+                max_x = min(img_width // stride, int(max(x_from, x_to) + threshold))
+                max_y = min(img_height // stride, int(max(y_from, y_to) + threshold))
+                # 计算单位向量
+                norm_x = vector_x / module
+                norm_y = vector_y / module
+                # 以下算法为：利用两向量的叉乘为平行四边形的面积的定律来画出六变形
+                for y in range(min_y, max_y):
+                    for x in range(min_x, max_x):
+                        # 得到由遍历的点到起点所组成的向量bec
+                        bec_x = x - x_from
+                        bec_y = y - y_from
+                        # 计算bec向量与单位向量的叉乘，得到的是两个向量组成的平行四边形的面积
+                        size = abs(bec_x * norm_y - bec_y * norm_x)
+                        # 如果计算得到的面积比阈值大，则不赋值
+                        if size > threshold:
+                            continue
+                        paf_x[y][x] = norm_x
+                        paf_y[y][x] = norm_y
         return paf_x, paf_y
 
 

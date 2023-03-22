@@ -27,20 +27,16 @@ heatmap_dict = {
     'wheel': 7
 }
 
-# 下标为起点，值为终点，-1表示不连通
-limb_dict = [6, 0, 1, 6, 3, 4, 7, -1]
-# 起点对应在pafs中的下标
-paf_dict = [0, 1, 2, 3, 4, 5, 6, -1]
+limb_dict = [[0, 6], [1, 0], [2, 1], [3, 6], [4, 3], [5, 4], [6, 7]]
 
 heatmap_num = len(heatmap_dict.keys())
-paf_num = (max(paf_dict) + 1) * 2
+paf_num = len(limb_dict) * 2
 
 dataset = Train_Dataset(
     heatmap_num=heatmap_num,
     paf_num=paf_num,
     heatmap_dict=heatmap_dict,
     limb_dict=limb_dict,
-    paf_dict=paf_dict,
     annotation_path=annotation_path,
     img_root_path=img_root_path,
 )
@@ -54,7 +50,7 @@ train_loader = torch.utils.data.DataLoader(
 )
 
 model = DMNet(
-    base_model = base_model,
+    base_model=base_model,
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )
@@ -99,7 +95,7 @@ for epoch in range(num_epochs):
     print(output)
     log_recorder += output + '\n'
 
-output_pre = '%s-ep%d-loss%.2f'%(base_model, num_epochs, total_loss)
+output_pre = 'body-%s-ep%d-loss%.2f'%(base_model, num_epochs, total_loss)
 torch.save(model.state_dict(), os.path.join(model_save_dir, output_pre + '.pth'))
 with open(os.path.join(model_save_dir, output_pre + '.log'), 'w') as log:
     log.write(log_recorder)
