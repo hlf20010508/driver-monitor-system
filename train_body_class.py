@@ -9,8 +9,9 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
 
-width = int(os.environ.get('width', 224))
-height = int(os.environ.get('height', 224))
+width = int(os.environ.get('width', 299))
+height = int(os.environ.get('height', 299))
+num_per_class = int(os.environ.get('num_per_class', 1000))
 
 num_epochs = int(os.environ.get('num_epochs', 100))
 batch_size = int(os.environ.get('batch_size', 50))
@@ -22,7 +23,8 @@ class_size = len(BODY_CLASS_DICT)
 dataset = Train_Dataset_Class(
     path=img_root_path,
     width=width,
-    height=height
+    height=height,
+    num_per_class=num_per_class
 )
 
 train_loader = torch.utils.data.DataLoader(
@@ -35,8 +37,7 @@ train_loader = torch.utils.data.DataLoader(
 
 model = inception_v3(weights=Inception_V3_Weights.DEFAULT)
 model.fc = torch.nn.Sequential(
-    torch.nn.Linear(2048, class_size),
-    torch.nn.Softmax(dim=1)
+    torch.nn.Linear(model.fc.in_features, class_size)
 )
 
 model = model.to(device)
@@ -47,6 +48,8 @@ optimizer = torch.optim.Adam(
     lr=learning_rate,
     weight_decay=weight_decay,
 )
+
+criterion = torch.nn.CrossEntropyLoss()
 
 model.eval()
 
@@ -61,7 +64,7 @@ for epoch in range(num_epochs):
 
         out = model(images)
 
-        loss = torch.nn.functional.cross_entropy(out, labels)
+        loss = criterion(out, labels)
 
         optimizer.zero_grad()
         loss.backward()
