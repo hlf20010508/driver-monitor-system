@@ -19,7 +19,11 @@ weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 class_size = len(BODY_CLASS_DICT)
 
-dataset = Train_Dataset_Class(img_root_path)
+dataset = Train_Dataset_Class(
+    path=img_root_path,
+    width=width,
+    height=height
+)
 
 train_loader = torch.utils.data.DataLoader(
     dataset=dataset,
