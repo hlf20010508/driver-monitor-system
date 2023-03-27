@@ -184,11 +184,11 @@ class Train_Dataset(Dst):
         return len(self.img_path_list)
 
 class Train_Dataset_Class(Dst):
-    def __init__(self, path):
+    def __init__(self, path, width, height):
         self.path = path
 
         self.transforms = tf.Compose([
-            tf.Resize((299, 299)),
+            tf.Resize((width, height)),
             tf.ToTensor(),
             tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ])
@@ -206,6 +206,7 @@ class Train_Dataset_Class(Dst):
         class_list = [f for f in os.listdir(self.path) if not f.startswith('.')]
         item_list = []
         item_class_list = []
+        count = 0
         for dir in class_list:
             item_name_list = [f for f in os.listdir(os.path.join(self.path, dir)) if not f.startswith('.')]
             for item_name in item_name_list:
@@ -214,6 +215,9 @@ class Train_Dataset_Class(Dst):
                 item_class = [0. for i in range(len(class_list))]
                 item_class[BODY_CLASS_DICT[dir]] = 1.
                 item_class_list.append(np.array(item_class))
+                count += 1
+                if count % 1000 == 0:
+                    print(count)
         return item_list, item_class_list
 
     def __len__(self):

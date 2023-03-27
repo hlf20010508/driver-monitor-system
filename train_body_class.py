@@ -9,6 +9,9 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
 
+width = int(os.environ.get('width', 224))
+height = int(os.environ.get('height', 224))
+
 num_epochs = int(os.environ.get('num_epochs', 100))
 batch_size = int(os.environ.get('batch_size', 50))
 learning_rate = float(os.environ.get('learning_rate', 1e-3))
