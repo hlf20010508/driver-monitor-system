@@ -1,5 +1,6 @@
 import os
 from torch.utils.data import Dataset as Dst
+from module.entity import TRANSFORMS, BODY_CLASS_DICT
 import torchvision.transforms as tf
 from PIL import Image
 import json
@@ -36,14 +37,11 @@ class Train_Dataset(Dst):
         self.img_path_list, self.label_list = self.get_item_list()
 
         # 处理图片
-        self.transforms = tf.Compose([
-            tf.ToTensor(),
-            tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ])
+        self.transforms = TRANSFORMS
     
     # 导入图片
     def get_image_matrix(self, path):
-        image = Image.open(path)
+        image = Image.open(path).convert('RGB')
         return image
 
     # 输出处理过的图片数据和图片标签
@@ -184,3 +182,39 @@ class Train_Dataset(Dst):
 
     def __len__(self):
         return len(self.img_path_list)
+
+class Train_Dataset_Class(Dst):
+    def __init__(self, path):
+        self.path = path
+
+        self.transforms = tf.Compose([
+            tf.Resize((299, 299)),
+            tf.ToTensor(),
+            tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ])
+        
+        self.item_list, self.item_class_list = self.get_item_list()
+        
+    def get_image_matrix(self, path):
+        image=Image.open(path).convert('RGB')
+        return image
+    
+    def __getitem__(self, index):
+        return self.item_list[index], self.item_class_list[index]
+        
+    def get_item_list(self):
+        class_list = [f for f in os.listdir(self.path) if not f.startswith('.')]
+        item_list = []
+        item_class_list = []
+        for dir in class_list:
+            item_name_list = [f for f in os.listdir(os.path.join(self.path, dir)) if not f.startswith('.')]
+            for item_name in item_name_list:
+                item = self.transforms(self.get_image_matrix(os.path.join(self.path, dir, item_name)))
+                item_list.append(item)
+                item_class = [0. for i in range(len(class_list))]
+                item_class[BODY_CLASS_DICT[dir]] = 1.
+                item_class_list.append(np.array(item_class))
+        return item_list, item_class_list
+
+    def __len__(self):
+        return len(self.item_list)

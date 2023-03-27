@@ -3,6 +3,7 @@ import torch
 from module.load_data import Train_Dataset
 from module.loss import Loss_Weighted
 from model.dm_net import DMNet
+from module.entity import FACE_HEATMAP_DICT, FACE_LIMB_DICT
 
 base_model = os.environ.get('base_model', 'mnv3s')
 annotation_path = os.environ['annotation_path']
@@ -16,62 +17,14 @@ weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-heatmap_dict = {
-    'left_eyebrow_out': 0,
-    'right_eyebrow_out': 1,
-    'left_eyebrow_in': 2,
-    'right_eyebrow_in': 3,
-    'left_eyebrow_center_top': 4,
-    'left_eyebrow_center_bottom': 5,
-    'right_eyebrow_center_top': 6,
-    'right_eyebrow_center_bottom': 7,
-    'left_eye_out': 8,
-    'right_eye_out': 9,
-    'left_eye_in': 10,
-    'right_eye_in': 11,
-    'left_eye_center_top': 12,
-    'left_eye_center_bottom': 13,
-    'right_eye_center_top': 14,
-    'right_eye_center_bottom': 15,
-    'left_eye_pupil': 16,
-    'right_eye_pupil': 17,
-    'left_nose_out': 18,
-    'right_nose_out': 19,
-    'nose_center_top': 20,
-    'nose_center_bottom': 21,
-    'left_mouth_out': 22,
-    'right_mouth_out': 23,
-    'mouth_center_top_lip_top': 24,
-    'mouth_center_top_lip_bottom': 25,
-    'mouth_center_bottom_lip_top': 26,
-    'mouth_center_bottom_lip_bottom': 27,
-    'chin': 28
-    # 'left_ear_top': 28,
-    # 'right_ear_top': 29,
-    # 'left_ear_bottom': 30,
-    # 'right_ear_bottom': 31,
-    # 'left_ear_canal': 32,
-    # 'right_ear_canal': 33,
-    # 'chin': 34
-}
-limb_dict = [
-    [0, 4], [4, 2], [2, 5], [5, 0], # left eyebrow
-    [1, 6], [6, 3], [3, 7], [7, 1], # right eyebrow
-    [8, 12], [12, 10], [10, 13], # left eye
-    [9, 14], [14, 11], [11, 16], # right eye
-    [18, 20], [20, 19], [19, 21], # nose
-    [22, 24], [24, 23], [22, 25], [25, 23], [22, 26], [26, 23], [22, 27], [27, 23], # mouse
-    [27, 28] # mouse to chin
-]
-
-heatmap_num = len(heatmap_dict.keys())
-paf_num = len(limb_dict) * 2
+heatmap_num = len(FACE_HEATMAP_DICT.keys())
+paf_num = len(FACE_LIMB_DICT) * 2
 
 dataset = Train_Dataset(
     heatmap_num=heatmap_num,
     paf_num=paf_num,
-    heatmap_dict=heatmap_dict,
-    limb_dict=limb_dict,
+    heatmap_dict=FACE_HEATMAP_DICT,
+    limb_dict=FACE_LIMB_DICT,
     annotation_path=annotation_path,
     img_root_path=img_root_path,
 )

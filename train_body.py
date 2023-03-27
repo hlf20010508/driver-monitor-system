@@ -3,6 +3,7 @@ import torch
 from module.load_data import Train_Dataset
 from module.loss import Loss_Weighted
 from model.dm_net import DMNet
+from module.entity import BODY_HEATMAP_DICT, BODY_LIMB_DICT
 
 base_model = os.environ.get('base_model', 'mnv3s')
 annotation_path = os.environ['annotation_path']
@@ -16,27 +17,14 @@ weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-heatmap_dict = {
-    'left-shoulder': 0,
-    'left-elbow': 1,
-    'left-wrist': 2,
-    'right-shoulder': 3,
-    'right-elbow': 4,
-    'right-wrist': 5,
-    'head': 6,
-    'wheel': 7
-}
-
-limb_dict = [[0, 6], [1, 0], [2, 1], [3, 6], [4, 3], [5, 4], [6, 7]]
-
-heatmap_num = len(heatmap_dict.keys())
-paf_num = len(limb_dict) * 2
+heatmap_num = len(BODY_HEATMAP_DICT)
+paf_num = len(BODY_LIMB_DICT) * 2
 
 dataset = Train_Dataset(
     heatmap_num=heatmap_num,
     paf_num=paf_num,
-    heatmap_dict=heatmap_dict,
-    limb_dict=limb_dict,
+    heatmap_dict=BODY_HEATMAP_DICT,
+    limb_dict=BODY_LIMB_DICT,
     annotation_path=annotation_path,
     img_root_path=img_root_path,
 )
