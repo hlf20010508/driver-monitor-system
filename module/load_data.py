@@ -208,7 +208,7 @@ class Train_Dataset_Class(Dst):
         item_class_list = []
         count = 0
         for dir in class_list:
-            item_name_list = [f for f in os.listdir(os.path.join(self.path, dir)) if not f.startswith('.')]
+            item_name_list = [f for f in os.listdir(os.path.join(self.path, dir)) if not f.startswith('.')][:1500]
             for item_name in item_name_list:
                 item = self.transforms(self.get_image_matrix(os.path.join(self.path, dir, item_name)))
                 item_list.append(item)
