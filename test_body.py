@@ -8,7 +8,6 @@ from model.dm_net import DMNet
 from module.entity import COLORS, INFINITE, TRANSFORMS
 
 base_model = os.environ.get('base_model', 'mnv3s')
-img_root_path = os.environ['img_root_path']
 video_path = os.environ['video_path']
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 
@@ -16,8 +15,6 @@ heatmap_num = int(os.environ.get('heatmap_num', 8))
 paf_num = int(os.environ.get('paf_num', 14))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-
-img_path_list = [ os.path.join(img_root_path, i) for i in os.listdir(img_root_path) if not i.startswith('.')]
 
 model = DMNet(
     base_model=base_model,

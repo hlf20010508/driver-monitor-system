@@ -11,7 +11,6 @@ model_save_dir = os.environ.get('model_save_dir', './')
 
 width = int(os.environ.get('width', 299))
 height = int(os.environ.get('height', 299))
-num_per_class = int(os.environ.get('num_per_class', 1000))
 
 num_epochs = int(os.environ.get('num_epochs', 100))
 batch_size = int(os.environ.get('batch_size', 50))
@@ -23,8 +22,7 @@ class_size = len(BODY_CLASS_DICT)
 dataset = Train_Dataset_Class(
     path=img_root_path,
     width=width,
-    height=height,
-    num_per_class=num_per_class
+    height=height
 )
 
 train_loader = torch.utils.data.DataLoader(
@@ -64,6 +62,10 @@ for epoch in range(num_epochs):
 
         out = model(images)
 
+        print(labels)
+        print(out)
+        print()
+
         loss = criterion(out, labels)
 
         optimizer.zero_grad()
@@ -74,7 +76,7 @@ for epoch in range(num_epochs):
     print(output)
     log_recorder += output + '\n'
 
-output_pre = 'body-ep%d-loss%.2f'%(num_epochs, total_loss)
+output_pre = 'body-ep%d-loss%.4f'%(num_epochs, total_loss)
 torch.save(model.state_dict(), os.path.join(model_save_dir, output_pre + '.pth'))
 with open(os.path.join(model_save_dir, output_pre + '.log'), 'w') as log:
     log.write(log_recorder)

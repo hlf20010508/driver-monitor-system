@@ -83,8 +83,35 @@ BODY_CLASS_DICT = {
     'safe_driving': 0,
     'texting': 1,
     'talking_on_phone': 2,
-    'operating_radio': 3,
-    'drinking': 4,
-    'reaching_behind': 5,
-    'hair_and_makeup': 6
+    'drinking': 3,
+    'reaching': 4,
+    'hair_and_makeup': 5
 }
+
+# BODY_CLASS_DICT = {
+#     'safe_driving': 0,
+#     'texting': 1,
+#     'talking_on_phone': 2,
+#     'operating_radio': 3,
+#     'drinking': 4,
+#     'reaching_behind': 5,
+#     'hair_and_makeup': 6
+# }
+
+BODY_CLASS_LIST = [
+    'safe_driving',
+    'texting',
+    'talking_on_phone',
+    'drinking',
+    'reaching',
+    'hair_and_makeup'
+]
+# BODY_CLASS_LIST = [
+#     'safe_driving',
+#     'texting',
+#     'talking_on_phone',
+#     'operating_radio',
+#     'drinking',
+#     'reaching_behind',
+#     'hair_and_makeup'
+# ]
