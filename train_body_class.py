@@ -62,10 +62,6 @@ for epoch in range(num_epochs):
 
         out = model(images)
 
-        print(labels)
-        print(out)
-        print()
-
         loss = criterion(out, labels)
 
         optimizer.zero_grad()
