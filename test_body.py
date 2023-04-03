@@ -3,9 +3,9 @@ import torch
 import cv2
 from PIL import Image
 import numpy as np
-import torchvision.transforms as tf
 from model.dm_net import DMNet
-from module.entity import COLORS, INFINITE, TRANSFORMS
+from module.entity import COLORS, INFINITE, TRANSFORMS, BODY_LIMB_DICT, THREADHOLD
+from test_body_class import detect_class
 
 base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
@@ -68,52 +68,57 @@ while(cap.isOpened()):
         heatmaps, pafs = model(image)
 
         heatmaps = heatmaps.to('cpu').detach().numpy()
-        pafs = pafs.to('cpu').detach().numpy()
 
         point_list = point_list_gen(heatmaps, ori_width, ori_height)
 
-    for heatmap_class in point_list:
-        for points in point_list:
-            for point in points:
-                cv2.circle(ori_img, point, 4, COLORS[0], -1)
+    for points in point_list:
+        for point in points:
+            cv2.circle(ori_img, point, 4, COLORS[0], -1)
 
-    left_shoulder = point_list[0]
-    left_elbow = point_list[1]
-    left_wrist = point_list[2]
-    right_shoulder = point_list[3]
-    right_elbow = point_list[4]
-    right_wrist = point_list[5]
-    head = point_list[6]
-    wheel = point_list[7]
+    # left_shoulder = point_list[0]
+    # left_elbow = point_list[1]
+    # left_wrist = point_list[2]
+    # right_shoulder = point_list[3]
+    # right_elbow = point_list[4]
+    # right_wrist = point_list[5]
+    # head = point_list[6]
+    # wheel = point_list[7]
 
-    if len(left_shoulder) > 0 and len(head) > 0:
-        cv2.line(ori_img, left_shoulder[0], head[0], COLORS[1])
-    if len(left_shoulder) > 0 and len(left_elbow) > 0:
-        cv2.line(ori_img, left_shoulder[0], left_elbow[0], COLORS[1])
-    if len(left_elbow) > 0 and len(left_wrist) > 0:
-        cv2.line(ori_img, left_elbow[0], left_wrist[0], COLORS[1])
-    if len(right_shoulder) > 0 and len(head) > 0:
-        cv2.line(ori_img, right_shoulder[0], head[0], COLORS[2])
-    if len(right_shoulder) > 0 and len(right_elbow) > 0:
-        cv2.line(ori_img, right_shoulder[0], right_elbow[0], COLORS[2])
-    if len(right_elbow) > 0 and len(right_wrist) > 0:
-        cv2.line(ori_img, right_elbow[0], right_wrist[0], COLORS[2])
-    if len(wheel) > 0 and len(left_wrist) > 0:
-        cv2.line(ori_img, wheel[0], left_wrist[0], COLORS[3])
-    if len(wheel) > 0 and len(right_wrist) > 0:
-        cv2.line(ori_img, wheel[0], right_wrist[0], COLORS[3])
-
-    if len(wheel) > 0:
+    for limb in BODY_LIMB_DICT:
+        start = limb[0]
+        end = limb[1]
+        if len(point_list[start]) > 0 and len(point_list[end]) > 0:
+            cv2.line(ori_img, point_list[start][0], point_list[end][0], COLORS[1])
+        # if len(left_shoulder) > 0 and len(head) > 0:
+        #     cv2.line(ori_img, left_shoulder[0], head[0], COLORS[1])
+        # if len(left_shoulder) > 0 and len(left_elbow) > 0:
+        #     cv2.line(ori_img, left_shoulder[0], left_elbow[0], COLORS[1])
+        # if len(left_elbow) > 0 and len(left_wrist) > 0:
+        #     cv2.line(ori_img, left_elbow[0], left_wrist[0], COLORS[1])
+        # if len(right_shoulder) > 0 and len(head) > 0:
+        #     cv2.line(ori_img, right_shoulder[0], head[0], COLORS[2])
+        # if len(right_shoulder) > 0 and len(right_elbow) > 0:
+        #     cv2.line(ori_img, right_shoulder[0], right_elbow[0], COLORS[2])
+        # if len(right_elbow) > 0 and len(right_wrist) > 0:
+        #     cv2.line(ori_img, right_elbow[0], right_wrist[0], COLORS[2])
+        # if len(wheel) > 0 and len(left_wrist) > 0:
+        #     cv2.line(ori_img, wheel[0], left_wrist[0], COLORS[3])
+        # if len(wheel) > 0 and len(right_wrist) > 0:
+        #     cv2.line(ori_img, wheel[0], right_wrist[0], COLORS[3])
+    
+    if len(point_list[-1]) > 0: # wheel
         left_dis = INFINITE
         right_dis = INFINITE
-        if len(left_wrist) > 0:
-            left_dis = calc_distance([left_wrist[0], wheel[0]])
-        if len(right_wrist) > 0:
-            right_dis = calc_distance([right_wrist[0], wheel[0]])
-        if left_dis < 100 and right_dis < 100:
-            cv2.putText(ori_img, 'safe', (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[4])
+        if len(point_list[2]) > 0: # left wrist
+            left_dis = calc_distance([point_list[2][0], point_list[-1][0]])
+        if len(point_list[5]) > 0: # right wrist
+            right_dis = calc_distance([point_list[5][0], point_list[-1][0]])
+        if left_dis < THREADHOLD and right_dis < THREADHOLD:
+            cv2.putText(ori_img, 'safe', (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[2])
         else:
-            cv2.putText(ori_img, 'dangerous', (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[5])
+            label = detect_class(ori_img)
+            cv2.putText(ori_img, label, (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[3])
+
     cv2.imshow('monitor', ori_img) 
     k = cv2.waitKey(1) 
     count += 1

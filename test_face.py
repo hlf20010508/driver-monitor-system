@@ -42,7 +42,7 @@ cap = cv2.VideoCapture(video_path)
 count = 0
 while(cap.isOpened()):
     ret, ori_img = cap.read() 
-    if count % 5 == 0:
+    if count % 1 == 0:
         ori_width = ori_img.shape[1]
         ori_height = ori_img.shape[0]
         image = Image.fromarray(cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB))
@@ -54,14 +54,12 @@ while(cap.isOpened()):
         heatmaps, pafs = model(image)
 
         heatmaps = heatmaps.to('cpu').detach().numpy()
-        pafs = pafs.to('cpu').detach().numpy()
 
         point_list = point_list_gen(heatmaps, ori_width, ori_height)
 
-    for heatmap_class in point_list:
-        for points in point_list:
-            for point in points:
-                cv2.circle(ori_img, point, 4, COLORS[0], -1)
+    for points in point_list:
+        for point in points:
+            cv2.circle(ori_img, point, 4, COLORS[0], -1)
 
     #     left_shoulder = point_list[0]
     #     left_elbow = point_list[1]

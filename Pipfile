@@ -9,11 +9,7 @@ torchvision = "*"
 pillow = "*"
 opencv-python = "*"
 scipy = "*"
-wget = "*"
-
-[dev-packages]
-jupyter = "*"
-notebook = "*"
+torch-geometric-temporal = "*"
 
 [requires]
 python_version = "3.9"
