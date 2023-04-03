@@ -22,15 +22,31 @@ BODY_HEATMAP_DICT = {
     'right-shoulder': 3,
     'right-elbow': 4,
     'right-wrist': 5,
-    'head': 6,
-    'wheel': 7
+    'nose': 6,
+    'right-ear': 7,
+    'wheel': 8
 }
 
 BODY_LIMB_DICT = [
-    [0, 6], [1, 0], [2, 1], # left arm
-    [3, 6], [4, 3], [5, 4], # right arm
-    [6, 7] # head to wheel
+    [0, 1], [1, 2], # left arm
+    [3, 4], [4, 5], # right arm
 ]
+# BODY_HEATMAP_DICT = {
+#     'left-shoulder': 0,
+#     'left-elbow': 1,
+#     'left-wrist': 2,
+#     'right-shoulder': 3,
+#     'right-elbow': 4,
+#     'right-wrist': 5,
+#     'head': 6,
+#     'wheel': 7
+# }
+
+# BODY_LIMB_DICT = [
+#     [0, 6], [1, 0], [2, 1], # left arm
+#     [3, 6], [4, 3], [5, 4], # right arm
+#     [6, 7] # head to wheel
+# ]
 
 # FACE_HEATMAP_DICT = {
 #     'left_eyebrow_out': 0,
@@ -100,6 +116,14 @@ FACE_LIMB_DICT = [
     [6, 7], [7, 8], [8, 9], # left eye
     [10, 11], [11, 12], [12, 13], # right eye
     [14, 15], [15, 16], [16, 17], [17, 18] # mouse
+]
+
+FACE_LIMB_DICT_NEW = [
+    [0, 1], [1, 2], # left eyebrow
+    [3, 4], [4, 5], # right eyebrow
+    [6, 7], [7, 8], [8, 9], [9, 6], # left eye
+    [10, 11], [11, 12], [12, 13], [13, 10], # right eye
+    [15, 16], [16, 17], [17, 18], [18, 15] # mouse
 ]
 
 # FACE_LIMB_DICT = [

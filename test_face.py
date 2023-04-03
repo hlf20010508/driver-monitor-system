@@ -4,7 +4,7 @@ import cv2
 from PIL import Image
 import numpy as np
 from model.dm_net import DMNet
-from module.entity import COLORS, TRANSFORMS, FACE_HEATMAP_DICT, FACE_LIMB_DICT
+from module.entity import COLORS, TRANSFORMS, FACE_HEATMAP_DICT, FACE_LIMB_DICT, FACE_LIMB_DICT_NEW
 
 base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
@@ -32,7 +32,7 @@ def point_list_gen(heatmaps, ori_width, ori_height):
     for heatmap_index in range(heatmap_num):
         heatmap = heatmaps[heatmap_index]
         max_point = np.max(heatmap)
-        if max_point > 0.1:
+        if max_point > 0.8:
             point = np.where(heatmap == max_point)
             point = (int(point[1][0] * scale_x), int(point[0][0] * scale_y))
             point_list[heatmap_index].append(point)
@@ -60,32 +60,12 @@ while(cap.isOpened()):
     for points in point_list:
         for point in points:
             cv2.circle(ori_img, point, 4, COLORS[0], -1)
-
-    #     left_shoulder = point_list[0]
-    #     left_elbow = point_list[1]
-    #     left_wrist = point_list[2]
-    #     right_shoulder = point_list[3]
-    #     right_elbow = point_list[4]
-    #     right_wrist = point_list[5]
-    #     head = point_list[6]
-    #     wheel = point_list[7]
-
-    # if len(left_shoulder) > 0 and len(head) > 0:
-    #     cv2.line(ori_img, left_shoulder[0], head[0], COLORS[1])
-    # if len(left_shoulder) > 0 and len(left_elbow) > 0:
-    #     cv2.line(ori_img, left_shoulder[0], left_elbow[0], COLORS[1])
-    # if len(left_elbow) > 0 and len(left_wrist) > 0:
-    #     cv2.line(ori_img, left_elbow[0], left_wrist[0], COLORS[1])
-    # if len(right_shoulder) > 0 and len(head) > 0:
-    #     cv2.line(ori_img, right_shoulder[0], head[0], COLORS[2])
-    # if len(right_shoulder) > 0 and len(right_elbow) > 0:
-    #     cv2.line(ori_img, right_shoulder[0], right_elbow[0], COLORS[2])
-    # if len(right_elbow) > 0 and len(right_wrist) > 0:
-    #     cv2.line(ori_img, right_elbow[0], right_wrist[0], COLORS[2])
-    # if len(wheel) > 0 and len(left_wrist) > 0:
-    #     cv2.line(ori_img, wheel[0], left_wrist[0], COLORS[3])
-    # if len(wheel) > 0 and len(right_wrist) > 0:
-    #     cv2.line(ori_img, wheel[0], right_wrist[0], COLORS[3])
+    
+    for limb in FACE_LIMB_DICT_NEW:
+        start = limb[0]
+        end = limb[1]
+        if len(point_list[start]) > 0 and len(point_list[end]) > 0:
+            cv2.line(ori_img, point_list[start][0], point_list[end][0], COLORS[1])
 
     cv2.imshow('monitor', ori_img) 
     k = cv2.waitKey(1) 
