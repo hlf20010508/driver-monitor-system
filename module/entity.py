@@ -22,7 +22,7 @@ BODY_HEATMAP_DICT = {
     'right-shoulder': 3,
     'right-elbow': 4,
     'right-wrist': 5,
-    'nose': 6,
+    'mouse': 6,
     'right-ear': 7,
     'wheel': 8
 }

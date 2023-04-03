@@ -75,36 +75,11 @@ while(cap.isOpened()):
         for point in points:
             cv2.circle(ori_img, point, 4, COLORS[0], -1)
 
-    # left_shoulder = point_list[0]
-    # left_elbow = point_list[1]
-    # left_wrist = point_list[2]
-    # right_shoulder = point_list[3]
-    # right_elbow = point_list[4]
-    # right_wrist = point_list[5]
-    # head = point_list[6]
-    # wheel = point_list[7]
-
     for limb in BODY_LIMB_DICT:
         start = limb[0]
         end = limb[1]
         if len(point_list[start]) > 0 and len(point_list[end]) > 0:
             cv2.line(ori_img, point_list[start][0], point_list[end][0], COLORS[1])
-        # if len(left_shoulder) > 0 and len(head) > 0:
-        #     cv2.line(ori_img, left_shoulder[0], head[0], COLORS[1])
-        # if len(left_shoulder) > 0 and len(left_elbow) > 0:
-        #     cv2.line(ori_img, left_shoulder[0], left_elbow[0], COLORS[1])
-        # if len(left_elbow) > 0 and len(left_wrist) > 0:
-        #     cv2.line(ori_img, left_elbow[0], left_wrist[0], COLORS[1])
-        # if len(right_shoulder) > 0 and len(head) > 0:
-        #     cv2.line(ori_img, right_shoulder[0], head[0], COLORS[2])
-        # if len(right_shoulder) > 0 and len(right_elbow) > 0:
-        #     cv2.line(ori_img, right_shoulder[0], right_elbow[0], COLORS[2])
-        # if len(right_elbow) > 0 and len(right_wrist) > 0:
-        #     cv2.line(ori_img, right_elbow[0], right_wrist[0], COLORS[2])
-        # if len(wheel) > 0 and len(left_wrist) > 0:
-        #     cv2.line(ori_img, wheel[0], left_wrist[0], COLORS[3])
-        # if len(wheel) > 0 and len(right_wrist) > 0:
-        #     cv2.line(ori_img, wheel[0], right_wrist[0], COLORS[3])
     
     if len(point_list[-1]) > 0: # wheel
         left_dis = INFINITE
