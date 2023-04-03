@@ -32,7 +32,7 @@ def point_list_gen(heatmaps, ori_width, ori_height):
     for heatmap_index in range(heatmap_num):
         heatmap = heatmaps[heatmap_index]
         max_point = np.max(heatmap)
-        if max_point > 0.2:
+        if max_point > 0.1:
             point = np.where(heatmap == max_point)
             point = (int(point[1][0] * scale_x), int(point[0][0] * scale_y))
             point_list[heatmap_index].append(point)
@@ -42,7 +42,7 @@ cap = cv2.VideoCapture(video_path)
 count = 0
 while(cap.isOpened()):
     ret, ori_img = cap.read() 
-    if count % 1 == 0:
+    if count % 5 == 0:
         ori_width = ori_img.shape[1]
         ori_height = ori_img.shape[0]
         image = Image.fromarray(cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB))

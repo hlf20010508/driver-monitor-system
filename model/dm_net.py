@@ -46,31 +46,18 @@ class Base_model(nn.Module):
     def __init__(self, base_model):
         super().__init__()
         # shape: (height/16) X (width/16)
-        # if base_model == 'vgg19':
-        #     self.net_base = models.vgg19_bn(weights=models.VGG19_BN_Weights.DEFAULT).features[:-1]
-        #     self.cpm = Cpm(512)
-        # elif base_model == 'rsn18':
-        #     resnet18 = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-        #     self.net_base = nn.Sequential(
-        #         resnet18.conv1,
-        #         resnet18.bn1,
-        #         resnet18.relu,
-        #         resnet18.maxpool,
-        #         resnet18.layer1,
-        #         resnet18.layer2,
-        #         resnet18.layer3
-        #     )
-        #     self.cpm = Cpm(256)
-        # elif base_model =='mnv3s':
-        self.net_base = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT).features[:9]
-        # self.net_base[4].block[1][0] = nn.Conv2d(96, 96, kernel_size=(5, 5), stride=(1, 1), padding=(2, 2), groups=96, bias=False)
-        self.cpm = Cpm(48)
-        # elif base_model =='mnv3l':
-        #     self.net_base = models.mobilenet_v3_large(weights=models.MobileNet_V3_Large_Weights.DEFAULT).features[:13]
-        #     self.cpm = Cpm(112)
-        # else:
-        #     print('base model available: vgg19 rsn18 mnv3s mnv3l')
-        #     exit()
+        if base_model == 'vgg19':
+            self.net_base = models.vgg19_bn(weights=models.VGG19_BN_Weights.DEFAULT).features[:-1]
+            self.cpm = Cpm(512)
+        elif base_model =='mnv3s':
+            self.net_base = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT).features[:9]
+            self.cpm = Cpm(48)
+        elif base_model =='mnv3l':
+            self.net_base = models.mobilenet_v3_large(weights=models.MobileNet_V3_Large_Weights.DEFAULT).features[:13]
+            self.cpm = Cpm(112)
+        else:
+            print('base model available: vgg19 mnv3s mnv3l')
+            exit()
 
     def forward(self, h):
         h = self.net_base(h)
