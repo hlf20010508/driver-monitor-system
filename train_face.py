@@ -17,7 +17,7 @@ weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-heatmap_num = len(FACE_HEATMAP_DICT.keys())
+heatmap_num = len(FACE_HEATMAP_DICT)
 paf_num = len(FACE_LIMB_DICT) * 2
 
 dataset = Train_Dataset(

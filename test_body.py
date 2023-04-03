@@ -4,15 +4,15 @@ import cv2
 from PIL import Image
 import numpy as np
 from model.dm_net import DMNet
-from module.entity import COLORS, INFINITE, TRANSFORMS, BODY_LIMB_DICT, THREADHOLD
+from module.entity import COLORS, INFINITE, TRANSFORMS, BODY_HEATMAP_DICT, BODY_LIMB_DICT, THREADHOLD
 from test_body_class import detect_class
 
 base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 
-heatmap_num = int(os.environ.get('heatmap_num', 8))
-paf_num = int(os.environ.get('paf_num', 14))
+heatmap_num = len(BODY_HEATMAP_DICT)
+paf_num = len(BODY_LIMB_DICT) * 2
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 

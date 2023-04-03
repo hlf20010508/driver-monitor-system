@@ -4,14 +4,14 @@ import cv2
 from PIL import Image
 import numpy as np
 from model.dm_net import DMNet
-from module.entity import COLORS, TRANSFORMS
+from module.entity import COLORS, TRANSFORMS, FACE_HEATMAP_DICT, FACE_LIMB_DICT
 
 base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 
-heatmap_num = int(os.environ.get('heatmap_num', 29))
-paf_num = int(os.environ.get('paf_num', 52))
+heatmap_num = len(FACE_HEATMAP_DICT)
+paf_num = len(FACE_LIMB_DICT) * 2
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
