@@ -51,8 +51,6 @@ optimizer = torch.optim.Adam(
     weight_decay=weight_decay,
 )
 
-scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.96)
-
 model.eval()
 
 log_recorder = ''
@@ -81,7 +79,6 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
         total_loss+=loss.item()
-    scheduler.step()
     output = 'epoch: %d/%d loss: %f'%(epoch + 1, num_epochs, total_loss)
     print(output)
     log_recorder += output + '\n'
