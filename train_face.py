@@ -42,7 +42,6 @@ model = DMNet(
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )
-model = model.to(device)
 
 # 定义损失和优化器
 optimizer = torch.optim.Adam(
@@ -51,6 +50,7 @@ optimizer = torch.optim.Adam(
     weight_decay=weight_decay,
 )
 
+model = model.to(device)
 model.eval()
 
 log_recorder = ''

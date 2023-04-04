@@ -30,6 +30,7 @@ BODY_HEATMAP_DICT = {
 BODY_LIMB_DICT = [
     [0, 1], [1, 2], # left arm
     [3, 4], [4, 5], # right arm
+    [0, 6], [3, 6], [6, 7], [6, 8]
 ]
 # BODY_HEATMAP_DICT = {
 #     'left-shoulder': 0,

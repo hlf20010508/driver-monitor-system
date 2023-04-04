@@ -215,3 +215,70 @@ class Train_Dataset_Class(Dst):
 
     def __len__(self):
         return len(self.item_list)
+
+class STGCN_Dataset(Dst):
+    def __init__(
+            self,
+            num_nodes,
+            point_dict,
+            class_dict,
+            annotation_path,
+        ):
+        self.num_nodes = num_nodes
+        self.point_dict = point_dict
+        self.class_dict = class_dict
+        self.annotation_path = annotation_path
+
+        self.item_list, self.label_list = self.get_item_list()
+    
+    def __getitem__(self, index):
+        items = []
+        for i in range(index, index + 9):
+            items.append(self.item_list[i])
+        items = np.array(items)
+        return items, self.label_list[index + 8]
+    
+    # 生成图片路径列表和标签列表
+    def get_item_list(self):
+        # 打开标注文件
+        with open(self.annotation_path, 'r') as annotation_file:
+            annotation = json.load(annotation_file)
+        item_list = []
+        label_list = []
+        milestones = [
+            (5272, 'safe_driving'), (5296, 'reaching'), (5330, 'hair_and_makeup'), (5345, 'reaching'),
+            (5373, 'safe_driving'), (5382, 'reaching'), (5451, 'talking_on_phone'), (5494, 'reaching'),
+            (5530, 'safe_driving'), (5538, 'reaching'), (5579, 'texting'), (5583, 'reaching'),
+            (5622, 'safe_driving'), (5630, 'reaching'), (5755, 'talking_on_phone'), (5764, 'reaching'),
+            (5816, 'safe_driving'), (5832, 'reaching'), (5871, 'hair_and_makeup'), (5884, 'reaching'),
+            (5900, 'safe_driving'), (5906, 'reaching'), (5948, 'texting'), (5953, 'reaching'),
+            (5987, 'safe_driving'), (5999, 'reaching'), (6023, 'talking_on_phone')
+        ]
+        milestones = list(zip(*milestones))
+        for item in annotation:
+            item_id = item['id']
+            for i in range(len(milestones[0])):
+                if milestones[0][i] >= item_id:
+                    class_name = milestones[1][i]
+                    class_id = self.class_dict[class_name]
+                    label_list.append(class_id)
+                    break
+            img_width = item['annotations'][0]['result'][0]['original_width']
+            img_height = item['annotations'][0]['result'][0]['original_height']
+            points_list = [(-1, -1) for i in range(self.num_nodes)]
+            for result in item['annotations'][0]['result']:
+                try:
+                    index = self.point_dict[result['value']['keypointlabels'][0]]
+                except:
+                    continue
+                x = result['value']['x']
+                y = result['value']['y']
+                x = x / 100 * img_width / stride
+                y = y / 100 * img_height / stride
+                points_list[index] = (x, y)
+            item_list.append(points_list)
+        return np.array(item_list), np.array(label_list)
+
+
+    def __len__(self):
+        return len(self.item_list) - 8
