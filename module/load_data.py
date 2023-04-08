@@ -34,7 +34,7 @@ class Train_Dataset(Dst):
         self.annotation_path = annotation_path
         self.img_root_path = img_root_path
         # 获取图片路径列表和标签列表
-        self.img_path_list, self.label_list = self.get_item_list()
+        self.img_list, self.label_list = self.get_item_list()
 
         # 处理图片
         self.transforms = TRANSFORMS
@@ -46,18 +46,19 @@ class Train_Dataset(Dst):
 
     # 输出处理过的图片数据和图片标签
     def __getitem__(self, index):
-        return self.transforms(self.get_image_matrix(self.img_path_list[index])), self.label_list[index]
+        return self.img_list[index], self.label_list[index]
     
     # 生成图片路径列表和标签列表
     def get_item_list(self):
         # 打开标注文件
         with open(self.annotation_path, 'r') as annotation_file:
             annotation = json.load(annotation_file)
-        img_path_list = []
+        img_list = []
         label_list = []
         for item in annotation:
             name = item['data']['image'].strip().split('/')[-1]
-            img_path_list.append(os.path.join(self.img_root_path, name))
+            img_path = os.path.join(self.img_root_path, name)
+            img_list.append(self.transforms(self.get_image_matrix(img_path)))
             heatmap_points = [() for i in range(self.heatmap_num)]
             pafs = [() for i in range(self.paf_num // 2)]
             for result in item['annotations'][0]['result']:
@@ -86,7 +87,7 @@ class Train_Dataset(Dst):
                 'pafs_target': pafs_target,
                 'paf_masks': paf_masks
             })
-        return img_path_list, label_list
+        return img_list, label_list
 
     def get_heatmaps_and_masks(self, point_list, img_width, img_height):
         heatmap_list = []
@@ -179,7 +180,7 @@ class Train_Dataset(Dst):
 
 
     def __len__(self):
-        return len(self.img_path_list)
+        return len(self.img_list)
 
 class Train_Dataset_Class(Dst):
     def __init__(self, path, width, height):
