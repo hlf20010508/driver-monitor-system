@@ -1,6 +1,6 @@
 import os
 from torch.utils.data import Dataset as Dst
-from module.entity import TRANSFORMS, BODY_CLASS_DICT
+from module.entity import TRANSFORMS, BODY_CLASS_DICT, BODY_CENTER_POINT_INDEX
 import torchvision.transforms as tf
 from PIL import Image
 import json
@@ -267,7 +267,11 @@ class STGCN_Dataset(Dst):
                     class_id = self.class_dict[class_name]
                     label_list.append(class_id)
             item_list.append(points_list)
-        return np.array(item_list), np.array(label_list)
+        item_list = np.array(item_list)
+        mean = np.mean(item_list, axis=0) # 计算均值
+        std = np.std(item_list, axis=0)   # 计算标准差
+        item_list = (item_list - mean) / std # 标准化处理
+        return item_list, np.array(label_list)
 
     def __len__(self):
         return len(self.item_list) - self.time_len + 1

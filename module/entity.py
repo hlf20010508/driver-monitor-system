@@ -70,7 +70,10 @@ BODY_CLASS_DICT = {
     'reaching_behind': 4,
     'reaching_nearby': 5,
     'hair_and_makeup': 6,
-    'tired': 7
+    'tired': 7,
+    'operating_radio': 8,
 }
+
+BODY_CENTER_POINT_INDEX = 6
 
 TIME_LEN = 12
