@@ -9,6 +9,7 @@ base_model = os.environ.get('base_model', 'mnv3s')
 annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
+model_load_path = os.environ.get('model_load_path', None)
 
 num_epochs = int(os.environ.get('num_epochs', 300))
 batch_size = int(os.environ.get('batch_size', 24))
@@ -42,6 +43,9 @@ model = DMNet(
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )
+if model_load_path:
+    model_dict = torch.load(model_load_path, map_location=device)
+    model.load_state_dict(model_dict)
 model = model.to(device)
 
 # 定义损失和优化器
