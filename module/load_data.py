@@ -56,7 +56,7 @@ class Train_Dataset(Dst):
         img_path_list = []
         label_list = []
         for item in annotation:
-            name = item['file_upload']
+            name = item['data']['image'].strip().split('/')[-1]
             img_path_list.append(os.path.join(self.img_root_path, name))
             heatmap_points = [() for i in range(self.heatmap_num)]
             pafs = [() for i in range(self.paf_num // 2)]
