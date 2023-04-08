@@ -231,17 +231,7 @@ class STGCN_Dataset(Dst):
         self.item_list, self.label_list = self.get_item_list()
     
     def __getitem__(self, index):
-        items = []
-        for i in range(index, index + self.time_len):
-            # class_one_hot = [(0, 0) for i in range(len(self.class_dict))]
-            # if i != index + self.time_len - 1:
-            #     class_one_hot[self.label_list[index]] = (1, 1)
-            # class_one_hot = np.array(class_one_hot)
-            # item = np.concatenate([self.item_list[i], class_one_hot], axis=0)
-            # items.append(item)
-            items.append(self.item_list[i])
-        items = np.array(items)
-        return items, self.label_list[index + self.time_len - 1]
+        return self.item_list[index: index + self.time_len], self.label_list[index + self.time_len - 1]
     
     # 生成图片路径列表和标签列表
     def get_item_list(self):

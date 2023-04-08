@@ -13,8 +13,8 @@ time_len = int(os.environ.get('time_len', TIME_LEN))
 annotation_path = os.environ['annotation_path']
 model_save_dir = os.environ.get('model_save_dir', './')
 
-num_epochs = int(os.environ.get('num_epochs', 300))
-batch_size = int(os.environ.get('batch_size', 3))
+num_epochs = int(os.environ.get('num_epochs', 500))
+batch_size = int(os.environ.get('batch_size', 50))
 learning_rate = float(os.environ.get('learning_rate', 5e-6))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
