@@ -4,7 +4,7 @@ import cv2
 from PIL import Image
 import numpy as np
 from model.dm_net import DMNet
-from module.entity import COLORS, TRANSFORMS, FACE_HEATMAP_DICT, FACE_LIMB_DICT, FACE_LIMB_DICT_NEW
+from module.entity import COLORS, TRANSFORMS, FACE_HEATMAP_DICT, FACE_LIMB_DICT
 
 base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
@@ -61,7 +61,7 @@ while(cap.isOpened()):
         for point in points:
             cv2.circle(ori_img, point, 4, COLORS[0], -1)
     
-    for limb in FACE_LIMB_DICT_NEW:
+    for limb in FACE_LIMB_DICT:
         start = limb[0]
         end = limb[1]
         if len(point_list[start]) > 0 and len(point_list[end]) > 0:

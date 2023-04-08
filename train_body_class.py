@@ -1,5 +1,5 @@
 from model.stgcn import STGCN
-from module.entity import BODY_CLASS_DICT, BODY_HEATMAP_DICT, BODY_LIMB_DICT
+from module.entity import BODY_CLASS_DICT, BODY_HEATMAP_DICT, BODY_LIMB_DICT, TIME_LEN
 from module.load_data import STGCN_Dataset
 import os
 import torch
@@ -7,6 +7,8 @@ import numpy as np
 
 num_nodes = len(BODY_HEATMAP_DICT)
 class_num = len(BODY_CLASS_DICT)
+
+time_len = int(os.environ.get('time_len', TIME_LEN))
 
 annotation_path = os.environ['annotation_path']
 model_save_dir = os.environ.get('model_save_dir', './')
@@ -17,10 +19,10 @@ learning_rate = float(os.environ.get('learning_rate', 5e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-torch.set_default_dtype(torch.float64)
 
 dataset = STGCN_Dataset(
     num_nodes=num_nodes,
+    time_len=time_len,
     point_dict=BODY_HEATMAP_DICT,
     class_dict=BODY_CLASS_DICT,
     annotation_path=annotation_path,
@@ -34,7 +36,11 @@ train_loader = torch.utils.data.DataLoader(
     pin_memory=True
 )
 
-model = STGCN(num_nodes=num_nodes, class_num=class_num)
+model = STGCN(
+    num_nodes=num_nodes,
+    time_len=time_len,
+    class_num=class_num
+)
 
 criterion = torch.nn.CrossEntropyLoss()
 
@@ -56,7 +62,7 @@ for epoch in range(num_epochs):
     for batch in train_loader:
         items, labels = batch
 
-        items = items.to(device)
+        items = items.float().to(device)
         labels = labels.to(device)
 
         out = model(items, edge_index)

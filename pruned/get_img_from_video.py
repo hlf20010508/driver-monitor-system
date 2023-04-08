@@ -1,9 +1,6 @@
 import cv2
 import os
 
-Video_Dir = "/Users/hlf/Downloads/dms640x480/hair_phone_text/gA_1_s2_2019-03-08T09;21;03+01;00_rgb_body.mp4"
-Image_Dir_Root = '/Users/hlf/Downloads/dms640x480/hair_phone_text/image_body'
-
 def video2images(Video_Dir, Image_Dir_Root):
  
     cap = cv2.VideoCapture(Video_Dir)
@@ -24,9 +21,9 @@ def video2images(Video_Dir, Image_Dir_Root):
             print("Can't receive frame.")
             break
         # 设置每5帧取一次图片，若想逐帧抽取图片，可设置c % 1 == 0
-        if c % 10 == 0:
+        if c % 5 == 0:
             # 图片存放路径，即图片文件夹路径
-            cv2.imwrite(os.path.join(Image_Dir_Root, '%d.jpg'%index), frame) 
+            cv2.imwrite(os.path.join(Image_Dir_Root, '%04d.jpg'%index), frame) 
             index += 1
         c += 1
         cv2.waitKey(1)
@@ -35,4 +32,12 @@ def video2images(Video_Dir, Image_Dir_Root):
             break
     cap.release()
  
-video2images(Video_Dir, Image_Dir_Root)
+video2images(
+    Video_Dir="/Users/hlf/Downloads/dms640x480/driver body 1.mp4",
+    Image_Dir_Root='/Users/hlf/Downloads/dms640x480/image_body1'
+)
+
+video2images(
+    Video_Dir="/Users/hlf/Downloads/dms640x480/driver body 2.mp4",
+    Image_Dir_Root='/Users/hlf/Downloads/dms640x480/image_body2'
+)

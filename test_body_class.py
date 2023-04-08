@@ -1,68 +1,41 @@
 import torch
 import os
-from torchvision.models import inception_v3
-from module.entity import BODY_CLASS_LIST, COLORS
-import cv2
-from PIL import Image
-import torchvision.transforms as tf
+from module.entity import BODY_CLASS_DICT, BODY_HEATMAP_DICT, BODY_LIMB_DICT, TIME_LEN
+from model.stgcn import STGCN
+import numpy as np
 
 class_model_load_path = os.environ.get('class_model_load_path', './model.pth')
 video_path = os.environ['video_path']
 
-class_size = len(BODY_CLASS_LIST)
+time_len = int(os.environ.get('time_len', TIME_LEN))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-model = inception_v3()
-model.fc = torch.nn.Sequential(
-    torch.nn.Linear(model.fc.in_features, class_size)
+num_nodes = len(BODY_HEATMAP_DICT)
+class_num = len(BODY_CLASS_DICT)
+
+model = STGCN(
+    num_nodes=num_nodes,
+    time_len=time_len,
+    class_num=class_num
 )
+
 model_dict = torch.load(class_model_load_path, map_location=device)
 model.load_state_dict(model_dict)
 model = model.to(device)
 
 model.eval()
 
-TRANSFORMS = tf.Compose([
-    tf.Resize((299, 299)),
-    tf.ToTensor(),
-    tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-])
+edge_index = torch.tensor(np.array(list(zip(*BODY_LIMB_DICT)))).to(device)
 
-def detect_class(ori_img):
-    image = Image.fromarray(cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB))
-    image = TRANSFORMS(image)
-    image = torch.unsqueeze(image, 0)
+def detect_class(point_list):
+    point_list = torch.FloatTensor(point_list).to(device)
 
-    image = image.to(device)
-
-    out = model(image)
+    out = model(point_list, edge_index)
     
     out = torch.squeeze(out)
 
     max_index = int(torch.argmax(out))
 
-    label = BODY_CLASS_LIST[max_index]
+    label = list(BODY_CLASS_DICT.keys())[max_index]
     return label
-
-def detect_class_show():
-    cap = cv2.VideoCapture(video_path)
-    count = 0
-    while(cap.isOpened()):
-        ret, ori_img = cap.read() 
-        if count % 10 == 0:
-            label = detect_class(ori_img)
-
-        cv2.putText(ori_img, label, (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[4])
-        cv2.imshow('monitor', ori_img) 
-        k = cv2.waitKey(1)
-        count += 1
-        #q键退出
-        if (k & 0xff == ord('q')): 
-            break
-
-    cap.release() 
-    cv2.destroyAllWindows()
-
-if __name__ == '__main__':
-    detect_class_show()
