@@ -62,7 +62,7 @@ for epoch in range(num_epochs):
     for batch in train_loader:
         items, labels = batch
 
-        items = items.float().to(device)
+        items = items.to(device)
         labels = labels.to(device)
 
         out = model(items, edge_index)

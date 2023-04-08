@@ -261,6 +261,7 @@ class STGCN_Dataset(Dst):
         mean = np.mean(item_list, axis=0) # 计算均值
         std = np.std(item_list, axis=0)   # 计算标准差
         item_list = (item_list - mean) / std # 标准化处理
+        item_list = item_list.astype(np.float32)
         return item_list, np.array(label_list)
 
     def __len__(self):
