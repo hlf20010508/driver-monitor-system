@@ -33,11 +33,10 @@ class Train_Dataset(Dst):
         self.limb_dict = limb_dict
         self.annotation_path = annotation_path
         self.img_root_path = img_root_path
-        # 获取图片路径列表和标签列表
-        self.img_list, self.label_list = self.get_item_list()
-
         # 处理图片
         self.transforms = TRANSFORMS
+        # 获取图片矩阵列表和标签列表
+        self.img_list, self.label_list = self.get_item_list()
     
     # 导入图片
     def get_image_matrix(self, path):
