@@ -58,7 +58,7 @@ count = 0
 time_point_list = []
 while(cap.isOpened()):
     ret, ori_img = cap.read() 
-    if count % 1 == 0:
+    if count % 5 == 0:
         ori_width = ori_img.shape[1]
         ori_height = ori_img.shape[0]
         image = Image.fromarray(cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB))
@@ -86,7 +86,7 @@ while(cap.isOpened()):
             cv2.line(ori_img, point_list[start], point_list[end], COLORS[1])
     
     if len(time_point_list) == time_len:
-        label = detect_class(np.array([time_point_list], dtype=float))
+        label = detect_class(np.array(time_point_list, dtype=np.float32))
         cv2.putText(ori_img, label, (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[3])
 
     cv2.imshow('monitor', ori_img) 

@@ -1,6 +1,6 @@
 import os
 from torch.utils.data import Dataset as Dst
-from module.entity import TRANSFORMS, BODY_CLASS_DICT, BODY_CENTER_POINT_INDEX
+from module.entity import TRANSFORMS, BODY_CLASS_DICT, BODY_CLASS_NUM_BALANCE
 import torchvision.transforms as tf
 from PIL import Image
 import json
@@ -36,7 +36,7 @@ class Train_Dataset(Dst):
         # 处理图片
         self.transforms = TRANSFORMS
         # 获取图片路径列表和标签列表
-        self.img_path_list, self.label_list = self.get_item_list()
+        self.img_path_list, self.label_list, self.img_index_list = self.get_item_list()
     
     # 导入图片
     def get_image_matrix(self, path):
@@ -45,7 +45,7 @@ class Train_Dataset(Dst):
 
     # 输出处理过的图片数据和图片标签
     def __getitem__(self, index):
-        return self.transforms(self.get_image_matrix(self.img_path_list[index])), self.label_list[index]
+        return self.transforms(self.get_image_matrix(self.img_path_list[self.img_index_list[index]])), self.label_list[self.img_index_list[index]]
     
     # 生成图片路径列表和标签列表
     def get_item_list(self):
@@ -53,8 +53,9 @@ class Train_Dataset(Dst):
         with open(self.annotation_path, 'r') as annotation_file:
             annotation = json.load(annotation_file)
         img_path_list = []
+        img_index_list = [] # 用于平衡各种动作的数量
         label_list = []
-        for item in annotation:
+        for item_index, item in enumerate(annotation):
             name = item['data']['image'].strip().split('/')[-1]
             img_path_list.append(os.path.join(self.img_root_path, name))
             heatmap_points = [() for i in range(self.heatmap_num)]
@@ -69,6 +70,10 @@ class Train_Dataset(Dst):
                     x = x / 100 * img_width / stride
                     y = y / 100 * img_height / stride
                     heatmap_points[index] = (x, y)
+                elif result['type'] == 'choices':
+                    class_name = result['value']['choices'][0]
+                    for i in range(BODY_CLASS_NUM_BALANCE[class_name]):
+                        img_index_list.append(item_index)
             for limb_index in range(len(self.limb_dict)):
                 start = heatmap_points[self.limb_dict[limb_index][0]]
                 end = heatmap_points[self.limb_dict[limb_index][1]]
@@ -85,7 +90,7 @@ class Train_Dataset(Dst):
                 'pafs_target': pafs_target,
                 'paf_masks': paf_masks
             })
-        return img_path_list, label_list
+        return img_path_list, label_list, img_index_list
 
     def get_heatmaps_and_masks(self, point_list, img_width, img_height):
         heatmap_list = []
@@ -178,7 +183,7 @@ class Train_Dataset(Dst):
 
 
     def __len__(self):
-        return len(self.img_path_list)
+        return len(self.img_index_list)
 
 class Train_Dataset_Class(Dst):
     def __init__(self, path, width, height):
@@ -258,9 +263,9 @@ class STGCN_Dataset(Dst):
                     label_list.append(class_id)
             item_list.append(points_list)
         item_list = np.array(item_list)
-        mean = np.mean(item_list, axis=0) # 计算均值
-        std = np.std(item_list, axis=0)   # 计算标准差
-        item_list = (item_list - mean) / std # 标准化处理
+        # mean = np.mean(item_list, axis=0) # 计算均值
+        # std = np.std(item_list, axis=0)   # 计算标准差
+        # item_list = (item_list - mean) / std # 标准化处理
         item_list = item_list.astype(np.float32)
         return item_list, np.array(label_list)
 

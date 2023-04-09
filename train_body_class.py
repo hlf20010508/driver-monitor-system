@@ -15,7 +15,7 @@ model_save_dir = os.environ.get('model_save_dir', './')
 
 num_epochs = int(os.environ.get('num_epochs', 500))
 batch_size = int(os.environ.get('batch_size', 50))
-learning_rate = float(os.environ.get('learning_rate', 5e-6))
+learning_rate = float(os.environ.get('learning_rate', 1e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')

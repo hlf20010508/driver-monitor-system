@@ -29,7 +29,7 @@ model.eval()
 edge_index = torch.tensor(np.array(list(zip(*BODY_LIMB_DICT)))).to(device)
 
 def detect_class(point_list):
-    point_list = torch.FloatTensor(point_list).to(device)
+    point_list = torch.FloatTensor(point_list).unsqueeze(0).to(device)
 
     out = model(point_list, edge_index)
     
