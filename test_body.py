@@ -27,15 +27,6 @@ model.load_state_dict(model_dict)
 model = model.to(device)
 model.eval()
 
-def load_img(img_path):
-    ori_img = cv2.imread(img_path)
-    ori_width = ori_img.shape[1]
-    ori_height = ori_img.shape[0]
-    image = Image.fromarray(cv2.cvtColor(ori_img, cv2.COLOR_BGR2RGB))
-    image = TRANSFORMS(image)
-    image = torch.unsqueeze(image, 0)
-    return ori_img, image, ori_width, ori_height
-
 def point_list_gen(heatmaps, ori_width, ori_height):
     point_list = [(-1, -1) for i in range(heatmap_num)]
     scale_x = ori_width / heatmaps.shape[2]
@@ -48,10 +39,6 @@ def point_list_gen(heatmaps, ori_width, ori_height):
             point = (int(point[1][0] * scale_x), int(point[0][0] * scale_y))
             point_list[heatmap_index] = point
     return point_list
-
-# 计算两点间距离
-def calc_distance(point_list):
-    return ((point_list[0][0] - point_list[1][0])**2 + (point_list[0][1] - point_list[1][1])**2)**0.5
 
 cap = cv2.VideoCapture(video_path)
 count = 0

@@ -12,6 +12,7 @@ time_len = int(os.environ.get('time_len', TIME_LEN))
 
 annotation_path = os.environ['annotation_path']
 model_save_dir = os.environ.get('model_save_dir', './')
+model_load_path = os.environ.get('model_load_path', None)
 
 num_epochs = int(os.environ.get('num_epochs', 500))
 batch_size = int(os.environ.get('batch_size', 50))
@@ -41,6 +42,9 @@ model = STGCN(
     time_len=time_len,
     class_num=class_num
 )
+if model_load_path:
+    model_dict = torch.load(model_load_path, map_location=device)
+    model.load_state_dict(model_dict)
 
 criterion = torch.nn.CrossEntropyLoss()
 

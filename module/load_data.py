@@ -262,11 +262,12 @@ class STGCN_Dataset(Dst):
                     class_id = self.class_dict[class_name]
                     label_list.append(class_id)
             item_list.append(points_list)
-        item_list = np.array(item_list)
+        # item_list = item_list + item_list[:: -1]
+        # label_list = label_list + label_list[:: -1]
+        item_list = np.array(item_list, dtype=np.float32)
         # mean = np.mean(item_list, axis=0) # 计算均值
         # std = np.std(item_list, axis=0)   # 计算标准差
         # item_list = (item_list - mean) / std # 标准化处理
-        item_list = item_list.astype(np.float32)
         return item_list, np.array(label_list)
 
     def __len__(self):
