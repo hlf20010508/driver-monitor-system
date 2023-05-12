@@ -5,7 +5,6 @@ from module.loss import Loss_Weighted
 from model.dm_net import DMNet
 from module.entity import FACE_HEATMAP_DICT, FACE_LIMB_DICT
 
-base_model = os.environ.get('base_model', 'mnv3s')
 annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
@@ -38,7 +37,6 @@ train_loader = torch.utils.data.DataLoader(
 )
 
 model = DMNet(
-    base_model=base_model,
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )
@@ -83,7 +81,7 @@ for epoch in range(num_epochs):
     print(output)
     log_recorder += output + '\n'
 
-output_pre = 'face-%s-ep%d-loss%.2f'%(base_model, num_epochs, total_loss)
+output_pre = 'face-mnv3s-ep%d-loss%.2f'%(num_epochs, total_loss)
 torch.save(model.state_dict(), os.path.join(model_save_dir, output_pre + '.pth'))
 with open(os.path.join(model_save_dir, output_pre + '.log'), 'w') as log:
     log.write(log_recorder)

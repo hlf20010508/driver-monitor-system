@@ -6,8 +6,9 @@ import numpy as np
 from model.dm_net import DMNet
 from module.entity import COLORS, TRANSFORMS, BODY_HEATMAP_DICT, BODY_LIMB_DICT, TIME_LEN
 from test_body_class import detect_class
+import cv2
+import time
 
-base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 time_len = int(os.environ.get('time_len', TIME_LEN))
@@ -18,7 +19,6 @@ paf_num = len(BODY_LIMB_DICT) * 2
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 model = DMNet(
-    base_model=base_model,
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )
@@ -43,6 +43,10 @@ def point_list_gen(heatmaps, ori_width, ori_height):
 cap = cv2.VideoCapture(video_path)
 count = 0
 time_point_list = []
+t = time.time()
+max_fps = 0
+min_fps = 10000
+ave_fps = []
 while(cap.isOpened()):
     ret, ori_img = cap.read() 
     if count % 5 == 0:
@@ -57,6 +61,7 @@ while(cap.isOpened()):
         heatmaps, pafs = model(image)
 
         heatmaps = heatmaps.to('cpu').detach().numpy()
+        # pafs = pafs.to('cpu').detach().numpy()
 
         point_list = point_list_gen(heatmaps, ori_width, ori_height)
         if len(time_point_list) == time_len:
@@ -77,8 +82,21 @@ while(cap.isOpened()):
         cv2.putText(ori_img, label, (0,30), cv2.FONT_HERSHEY_COMPLEX, 0.5, COLORS[3])
 
     cv2.imshow('monitor', ori_img) 
+    # k = cv2.waitKey()
     k = cv2.waitKey(1) 
     count += 1
+    if count % 60 == 0:
+        fps = 60 / (time.time() - t)
+        if fps > max_fps:
+            max_fps = fps
+        if fps < min_fps:
+            min_fps = fps
+        ave_fps.append(fps)
+        t = time.time()
+        _ave_fps = sum(ave_fps) / len(ave_fps)
+        print('max fps: %.3f'%max_fps)
+        print('min fps: %.3f'%min_fps)
+        print('ave fps: %.3f'%_ave_fps)
     #q键退出
     if (k & 0xff == ord('q')): 
         break

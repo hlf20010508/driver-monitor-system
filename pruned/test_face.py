@@ -6,7 +6,6 @@ import numpy as np
 from model.dm_net import DMNet
 from module.entity import COLORS, TRANSFORMS, FACE_HEATMAP_DICT, FACE_LIMB_DICT
 
-base_model = os.environ.get('base_model', 'mnv3s')
 video_path = os.environ['video_path']
 model_load_path = os.environ.get('model_load_path', 'model.pth')
 
@@ -16,7 +15,6 @@ paf_num = len(FACE_LIMB_DICT) * 2
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 model = DMNet(
-    base_model=base_model,
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )

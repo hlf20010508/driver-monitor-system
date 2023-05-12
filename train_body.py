@@ -5,15 +5,14 @@ from module.loss import Loss_Weighted
 from model.dm_net import DMNet
 from module.entity import BODY_HEATMAP_DICT, BODY_LIMB_DICT
 
-base_model = os.environ.get('base_model', 'mnv3s')
 annotation_path = os.environ['annotation_path']
 img_root_path = os.environ['img_root_path']
 model_save_dir = os.environ.get('model_save_dir', './')
 model_load_path = os.environ.get('model_load_path', None)
 
-num_epochs = int(os.environ.get('num_epochs', 300))
-batch_size = int(os.environ.get('batch_size', 24))
-learning_rate = float(os.environ.get('learning_rate', 5e-5))
+num_epochs = int(os.environ.get('num_epochs', 200))
+batch_size = int(os.environ.get('batch_size', 100))
+learning_rate = float(os.environ.get('learning_rate', 1e-5))
 weight_decay = float(os.environ.get('weight_decay', 5e-4))
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -39,7 +38,6 @@ train_loader = torch.utils.data.DataLoader(
 )
 
 model = DMNet(
-    base_model=base_model,
     heatmap_num=heatmap_num,
     paf_num=paf_num
 )
@@ -87,7 +85,7 @@ for epoch in range(num_epochs):
     print(output)
     log_recorder += output + '\n'
 
-output_pre = 'body-%s-ep%d-loss%.2f'%(base_model, num_epochs, total_loss)
+output_pre = 'body-mnv3s-ep%d-loss%.2f'%(num_epochs, total_loss)
 torch.save(model.state_dict(), os.path.join(model_save_dir, output_pre + '.pth'))
 with open(os.path.join(model_save_dir, output_pre + '.log'), 'w') as log:
     log.write(log_recorder)

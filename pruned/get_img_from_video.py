@@ -33,11 +33,11 @@ def video2images(Video_Dir, Image_Dir_Root):
     cap.release()
  
 video2images(
-    Video_Dir="/Users/hlf/Downloads/dms640x480/driver body 1.mp4",
-    Image_Dir_Root='/Users/hlf/Downloads/dms640x480/image_body1'
+    Video_Dir="/Users/hlf/Downloads/dmd720x480/driver body 1.mp4",
+    Image_Dir_Root='/Users/hlf/Downloads/dmd720x480/image_body1'
 )
 
 video2images(
-    Video_Dir="/Users/hlf/Downloads/dms640x480/driver body 2.mp4",
-    Image_Dir_Root='/Users/hlf/Downloads/dms640x480/image_body2'
+    Video_Dir="/Users/hlf/Downloads/dmd720x480/driver body 2.mp4",
+    Image_Dir_Root='/Users/hlf/Downloads/dmd720x480/image_body2'
 )

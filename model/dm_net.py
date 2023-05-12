@@ -4,9 +4,9 @@ from torchvision import models
 # import model.base_net as base_net
 
 class DMNet(nn.Module):
-    def __init__(self, base_model, heatmap_num, paf_num):
+    def __init__(self, heatmap_num, paf_num):
         super().__init__()
-        self.base = Base_model(base_model)
+        self.base = Base_model()
         self.stage_1 = Stage_1(heatmap_num, paf_num)
         self.stage_2 = Stage_2(heatmap_num, paf_num)
         
@@ -43,22 +43,11 @@ class Cpm(nn.Module):
         return h
 
 class Base_model(nn.Module):
-    def __init__(self, base_model):
+    def __init__(self):
         super().__init__()
         # shape: (height/16) X (width/16)
-        if base_model == 'vgg19':
-            self.net_base = models.vgg19_bn(weights=models.VGG19_BN_Weights.DEFAULT).features[:-1]
-            self.cpm = Cpm(512)
-        elif base_model =='mnv3s':
-            self.net_base = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT).features[:9]
-            self.cpm = Cpm(48)
-        elif base_model =='mnv3l':
-            self.net_base = models.mobilenet_v3_large(weights=models.MobileNet_V3_Large_Weights.DEFAULT).features[:13]
-            self.cpm = Cpm(112)
-        else:
-            print('base model available: vgg19 mnv3s mnv3l')
-            exit()
-
+        self.net_base = models.mobilenet_v3_small(weights=models.MobileNet_V3_Small_Weights.DEFAULT).features[:9]
+        self.cpm = Cpm(48)
     def forward(self, h):
         h = self.net_base(h)
         h = self.cpm(h)

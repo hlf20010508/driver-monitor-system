@@ -16,7 +16,7 @@ sigma = 1
 threshold = 2
 stride = 16
 
-# input size 640x480
+# input size 720x480
 class Train_Dataset(Dst):
     def __init__(
             self,
@@ -88,7 +88,10 @@ class Train_Dataset(Dst):
                 'heatmaps_target': heatmaps_target,
                 'heatmap_masks': heatmap_masks,
                 'pafs_target': pafs_target,
-                'paf_masks': paf_masks
+                'paf_masks': paf_masks,
+                'heatmap_points': heatmap_points,
+                'img_width': img_width,
+                'img_height': img_height
             })
         return img_path_list, label_list, img_index_list
 
@@ -185,38 +188,38 @@ class Train_Dataset(Dst):
     def __len__(self):
         return len(self.img_index_list)
 
-class Train_Dataset_Class(Dst):
-    def __init__(self, path, width, height):
-        self.path = path
-        self.transforms = tf.Compose([
-            tf.Resize((width, height)),
-            tf.ToTensor(),
-            tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
-        ])
+# class Train_Dataset_Class(Dst):
+#     def __init__(self, path, width, height):
+#         self.path = path
+#         self.transforms = tf.Compose([
+#             tf.Resize((width, height)),
+#             tf.ToTensor(),
+#             tf.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+#         ])
         
-        self.item_list, self.item_class_list = self.get_item_list()
+#         self.item_list, self.item_class_list = self.get_item_list()
         
-    def get_image_matrix(self, path):
-        image=Image.open(path).convert('RGB')
-        return image
+#     def get_image_matrix(self, path):
+#         image=Image.open(path).convert('RGB')
+#         return image
     
-    def __getitem__(self, index):
-        return self.item_list[index], self.item_class_list[index]
+#     def __getitem__(self, index):
+#         return self.item_list[index], self.item_class_list[index]
         
-    def get_item_list(self):
-        class_list = [f for f in os.listdir(self.path) if not f.startswith('.')]
-        item_list = []
-        item_class_list = []
-        for dir in class_list:
-            item_name_list = [f for f in os.listdir(os.path.join(self.path, dir)) if not f.startswith('.')]
-            for item_name in item_name_list:
-                item = self.transforms(self.get_image_matrix(os.path.join(self.path, dir, item_name)))
-                item_list.append(item)
-                item_class_list.append(BODY_CLASS_DICT[dir])
-        return item_list, item_class_list
+#     def get_item_list(self):
+#         class_list = [f for f in os.listdir(self.path) if not f.startswith('.')]
+#         item_list = []
+#         item_class_list = []
+#         for dir in class_list:
+#             item_name_list = [f for f in os.listdir(os.path.join(self.path, dir)) if not f.startswith('.')]
+#             for item_name in item_name_list:
+#                 item = self.transforms(self.get_image_matrix(os.path.join(self.path, dir, item_name)))
+#                 item_list.append(item)
+#                 item_class_list.append(BODY_CLASS_DICT[dir])
+#         return item_list, item_class_list
 
-    def __len__(self):
-        return len(self.item_list)
+#     def __len__(self):
+#         return len(self.item_list)
 
 class STGCN_Dataset(Dst):
     def __init__(

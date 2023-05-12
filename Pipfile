@@ -11,6 +11,3 @@ opencv-python = "*"
 scipy = "*"
 torch-geometric-temporal = "*"
 flask = "*"
-
-[requires]
-python_version = "3.9"
