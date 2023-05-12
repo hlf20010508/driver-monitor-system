@@ -7,6 +7,9 @@
 ## Dataset
 Uploaded on Kaggle, see [here](https://www.kaggle.com/datasets/hlf2001/driver-monitor-dataset) for details.
 
+## Pretrained Models
+See [release](https://github.com/hlf20010508/driver-monitor-system/releases/tag/Models) to get pretrained models.
+
 ## Environment
 - Train Lightweight-Openpose on Kaggle
 - Train ST-GCN on PC with CPU (training on GPU is not recommend, even slower than CPU)
@@ -20,8 +23,6 @@ Install environment
 pip install pipenv
 pipenv install
 ```
-
-See [release](https://github.com/hlf20010508/driver-monitor-system/releases) to get models and video.
 
 ## Train Lightweight-Openpose Model
 ```sh 
@@ -39,6 +40,7 @@ pipenv run python train_body_class.py
 ```
 
 ## Launch app
+See [release](https://github.com/hlf20010508/driver-monitor-system/releases/tag/Video) to get video.
 ```sh
 export video_path=$video_path
 export model_load_path=$model_load_path
