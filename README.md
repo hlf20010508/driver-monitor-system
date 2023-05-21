@@ -12,7 +12,7 @@ See [release](https://github.com/hlf20010508/driver-monitor-system/releases/tag/
 
 ## Environment
 - Train Lightweight-Openpose on Kaggle
-- Train ST-GCN on PC with CPU (training on GPU is not recommend, even slower than CPU)
+- Train ST-GCN on PC with CPU (training on GPU is not recommended which is even slower than on CPU)
 
 Kaggle Notebook is [here](https://www.kaggle.com/code/hlf2001/driver-monitor)
 
