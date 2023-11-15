@@ -1,8 +1,8 @@
-# driver-pose-system
-> driver pose system
+# driver-monitor-system
+driver monitor system
 
 ## UI
-![截屏2023-05-12 10 13 09](https://github.com/hlf20010508/driver-monitor-system/assets/76218469/24b2333e-dee8-46c1-81b1-e60ca6c42170)
+![screenshot](https://github.com/hlf20010508/driver-monitor-system/assets/76218469/24b2333e-dee8-46c1-81b1-e60ca6c42170)
 
 ## Dataset
 Uploaded on Kaggle, see [here](https://www.kaggle.com/datasets/hlf2001/driver-monitor-dataset) for details.
